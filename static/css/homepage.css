@@ -1,5 +1,6 @@
+/* Nav Bar Styles */
 .navbar {
-  list-style-type: none;
+  /* list-style-type: none; */
   margin: 0;
   padding: 0;
   background-color: #F52929;
@@ -27,6 +28,38 @@
   font-size: large;
 }
 
+
+.category:hover + .dropdown-content{
+  display: block;
+}
+.dropdown-content:hover{
+  display: block;
+}
+.dropdown-content a:hover{
+  background-color: #F52929;
+}
+.dropdown-content{
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+.dropdown-content a {
+  float: none;
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+.navbarDropdown{
+  float: left;
+  overflow: hidden;
+}
+
 #title{
   text-align: center;
   padding-top: 15px;
@@ -35,9 +68,14 @@
   font-size: xx-large;
 }
 
+/* Standings Styles */
 .standingsOuterContainer{
   display: inline-block;
-  padding-right: 20px;
+  padding-right: 25px;
+  min-width: 300px;
+}
+
+.standingsSlider{
   overflow-y: scroll;
   height:85vh;
 }
@@ -46,11 +84,12 @@
 }
 .standingsInnerContainer{
   display: flex;
-  padding-bottom: 10px;
+  border-bottom-style: solid;
+  margin-bottom: 10px;
+
 }
 .driverStanding{
   display: inline;
-  border-style: solid;
 }
 .driverPicture {
   display: inline-block;
@@ -63,28 +102,11 @@
   background-color: #c7c7c7;
 }
 .driverInfo{
-  border-bottom-style: solid;
-
+  max-width: 350px;
 
 }
 .standings{
   display: flex;
-}
-
-.category:hover + .dropdown-content{
-  display: block;
-}
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f9f9f9;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-}
-.dropdown-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
+  overflow-x: scroll;
+  width: 100%;
 }
