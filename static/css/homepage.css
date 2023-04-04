@@ -1,32 +1,47 @@
 /* Nav Bar Styles */
+
+#body{
+  text-align: center;
+}
+
 .navbar {
-  /* list-style-type: none; */
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 55px;
   background-color: #F52929;
-  /* text-align: center; */
+  text-align: center;
 }
-.category {
+.navbarDropdown{
+  float: left;
+  overflow: hidden;
+  background-color: #F52929;
+}
+.category, .signinItem{
   display: inline;
   padding: 15px;
 }
-.navbarItem{
+.categoryLink, .signinLink{
   text-decoration: none;
   text-align: center;
   color: white;
   font-size: xx-large;
 }
 .signinItem{
-  display: inline;
-  padding-right: 15px;
+  background-color: black;
   float: right;
 }
+
 .signinLink{
-  text-decoration: none;
-  text-align: center;
-  color: white;
   font-size: large;
 }
+
+.adminPanel{
+  background-color: rgb(255, 255, 121);
+  color: black;
+  font-size: large;
+}
+
 
 
 .category:hover + .dropdown-content{
@@ -55,10 +70,7 @@
   text-align: left;
 }
 
-.navbarDropdown{
-  float: left;
-  overflow: hidden;
-}
+
 
 #title{
   text-align: center;
@@ -92,10 +104,10 @@
   display: inline;
 }
 .driverPicture {
-  display: inline-block;
+  /* display: inline-block; */
   height: 75px;
   width: 75px;
-  background-color: #555;
+  /* background-color: #555; */
 }
 .driverPoints{
   float: right;
