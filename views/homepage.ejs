@@ -1,1374 +1,227 @@
 <!DOCTYPE html>
 <html lang="en">
 
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" />
-    <title>RaceWiki - Home</title>
-    <link rel="stylesheet" href="/css/homepage.css" />
-  </head>
+<head>
+  <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RaceWiki</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
+</head>
 
 <body>
 
-  <div id="body">
+  <header class="header mb-4">
+    <div class="container d-flex flex-wrap align-items-center">
+      <a href="/" class="text-decoration-none">
+        <h1 class="display-5">RaceWiki</h1>
+      </a>
 
-    <!-- Nav Bar Div Start -->
-    <div class="navbar">
-
-      <div class="navbarDropdown adminPanel">
-        <div class="category"><a class="categoryLink adminPanel" href="">Admin Panel</a></div>
+      <div class="ms-auto d-lg-none align-items-center">
+        <a href="/signin" class="btn btn-sm btn-outline-danger me-2">Sign In</a>
+        <a href="/controlpattern" class="btn btn-sm btn-outline-warning">Control Panel</a>
       </div>
 
-      <div class="navbarDropdown">
-        <div class="category"><a class="categoryLink" href="">F1</a></div>
-        <div class="dropdown-content">
-          <a href="">Schedules</a>
-          <a href="">Standings</a>
-          <a href="">Drivers</a>
-          <a href="">Teams</a>
-          <a href="">Circuits</a>
-        </div>
+      <div class="ms-auto d-none d-lg-block">
+        <form action="/search" method="get" class="me-2">
+          <div class="input-group">
+            <input type="text" class="form-control" name="query" placeholder="Search...">
+            <button type="submit" class="btn btn-outline-danger">Search</button>
+          </div>
+        </form>
       </div>
-
-      <div class="navbarDropdown">
-        <div class="category"><a class="categoryLink" href="">F2</a></div>
-        <div class="dropdown-content">
-          <a href="">Schedules</a>
-          <a href="">Standings</a>
-          <a href="">Drivers</a>
-          <a href="">Teams</a>
-          <a href="">Circuits</a>
-        </div>
-      </div>
-
-      <div class="navbarDropdown">
-        <div class="category"><a class="categoryLink" href="">F3</a></div>
-        <div class="dropdown-content">
-          <a href="">Schedules</a>
-          <a href="">Standings</a>
-          <a href="">Drivers</a>
-          <a href="">Teams</a>
-          <a href="">Circuits</a>
-        </div>
-      </div>
-
-      <div class="navbarDropdown">
-        <div class="category"><a class="categoryLink" href="">MotoGP</a></div>
-        <div class="dropdown-content">
-          <a href="">Schedules</a>
-          <a href="">Standings</a>
-          <a href="">Drivers</a>
-          <a href="">Teams</a>
-          <a href="">Circuits</a>
-        </div>
-      </div>
-
-      <div class="navbarDropdown">
-        <div class="category"><a class="categoryLink" href="">Moto2</a></div>
-        <div class="dropdown-content">
-          <a href="">Schedules</a>
-          <a href="">Standings</a>
-          <a href="">Drivers</a>
-          <a href="">Teams</a>
-          <a href="">Circuits</a>
-        </div>
-      </div>
-
-      <div class="navbarDropdown">
-        <div class="category"><a class="categoryLink" href="">Moto3</a></div>
-        <div class="dropdown-content">
-          <a href="">Schedules</a>
-          <a href="">Standings</a>
-          <a href="">Drivers</a>
-          <a href="">Teams</a>
-          <a href="">Circuits</a>
-        </div>
-      </div>
-
-      <div class="navbarDropdown">
-        <div class="category"><a class="categoryLink" href="">IndyCar</a></div>
-        <div class="dropdown-content">
-          <a href="">Schedules</a>
-          <a href="">Standings</a>
-          <a href="">Drivers</a>
-          <a href="">Teams</a>
-          <a href="">Circuits</a>
-        </div>
-      </div>
-
-      <div class="navbarDropdown">
-        <div class="category"><a class="categoryLink" href="">Nascar</a></div>
-        <div class="dropdown-content">
-          <a href="">Schedules</a>
-          <a href="">Standings</a>
-          <a href="">Drivers</a>
-          <a href="">Teams</a>
-          <a href="">Circuits</a>
-        </div>
-      </div>
-
-      <div class="signinItem"><a class="signinLink" href="">Sign In</a></div>
       
+      <nav class="nav mt-2 mt-lg-0 w-100 w-lg-auto">
+        <a class="nav-link" href="/category">F1</a>
+        <a class="nav-link" href="/category">F2</a>
+        <a class="nav-link" href="/category">MotoGP</a>
+        <a class="nav-link" href="/category">IndyCar</a>
+        <a href="/signin" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-danger ms-auto">Sign In</a>
+        <a href="/controlpanel" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-warning ms-2">Control Panel</a>
+      </nav>
+      
+      <form action="/search" method="get" class="mt-2 d-lg-none w-100">
+        <div class="input-group">
+          <input type="text" class="form-control" name="query" placeholder="Search...">
+          <button type="submit" class="btn btn-outline-danger">Search</button>
+        </div>
+      </form>
 
     </div>
-      <!-- <div class="navbar">
-
-        <div class="navbarDropdown">
-          <div class="category"><a class="navbarItem" href="">F1</a></div>
-          <div class="dropdown-content">
-            <a href="">Schedules</a>
-            <a href="">Standings</a>
-            <a href="">Drivers</a>
-            <a href="">Teams</a>
-            <a href="">Circuits</a>
-          </div>
-        </div>
-
-        <div class="navbarDropdown">
-          <div class="category"><a class="navbarItem" href="">F1</a></div>
-          <div class="dropdown-content">
-            <a href="">Schedules</a>
-            <a href="">Standings</a>
-            <a href="">Drivers</a>
-            <a href="">Teams</a>
-            <a href="">Circuits</a>
-          </div>
-        </div>
-
-        <div class="navbarDropdown">
-          <li class="category"><a class="navbarItem" href="">F3</a></li>
-          <div class="dropdown-content">
-            <a href="">Schedules</a>
-            <a href="">Standings</a>
-            <a href="">Drivers</a>
-            <a href="">Teams</a>
-            <a href="">Circuits</a>
-          </div>
-        </div>
-
-        <div class="navbarDropdown">
-          <li class="category"><a class="navbarItem" href="">Formula E</a></li>
-          <div class="dropdown-content">
-            <a href="">Schedules</a>
-            <a href="">Standings</a>
-            <a href="">Drivers</a>
-            <a href="">Teams</a>
-            <a href="">Circuits</a>
-          </div>
-        </div>
-
-        <div class="navbarDropdown">
-          <li class="category"><a class="navbarItem" href="">MotoGp</a></li>
-          <div class="dropdown-content">
-            <a href="">Schedules</a>
-            <a href="">Standings</a>
-            <a href="">Drivers</a>
-            <a href="">Teams</a>
-            <a href="">Circuits</a>
-          </div>
-        </div>
-
-        <div class="navbarDropdown">
-          <li class="category"><a class="navbarItem" href="">Moto2</a></li>
-          <div class="dropdown-content">
-            <a href="">Schedules</a>
-            <a href="">Standings</a>
-            <a href="">Drivers</a>
-            <a href="">Teams</a>
-            <a href="">Circuits</a>
-          </div>
-        </div>
-
-
-        <div class="navbarDropdown">
-          <li class="category"><a class="navbarItem" href="">Moto3</a></li>
-          <div class="dropdown-content">
-            <a href="">Schedules</a>
-            <a href="">Standings</a>
-            <a href="">Drivers</a>
-            <a href="">Teams</a>
-            <a href="">Circuits</a>
-          </div>
-        </div>
-
-
-        <div class="navbarDropdown">
-          <li class="category"><a class="navbarItem" href="">IndyCar</a></li>
-          <div class="dropdown-content">
-            <a href="">Schedules</a>
-            <a href="">Standings</a>
-            <a href="">Drivers</a>
-            <a href="">Teams</a>
-            <a href="">Circuits</a>
-          </div>
-        </div>
-
-        <div class="navbarDropdown">
-          <li class="category"><a class="navbarItem" href="">Nascar</a></li>
-          <div class="dropdown-content">
-            <a href="">Schedules</a>
-            <a href="">Standings</a>
-            <a href="">Drivers</a>
-            <a href="">Teams</a>
-            <a href="">Circuits</a>
-          </div>
-        </div> -->
-
-        <!-- <li class="adminPanel"><a class="navbarItem" href="">Manage Users</a></li> -->
-
-        <!-- <li class="signinItem"><a class="signinLink" href="">Sign In</a></li>
-
-      </div> -->
-
-    <!-- Nav Bar Div Ends -->    
-    <div id="title">World Standings</div>
-
-    <!-- Standings Div Starts -->
-    <div class="standings">
-
-      <div class="standingsOuterContainer">
-        <div class="categoryTitle">F1</div>
-        <div class="standingsSlider">
-
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">300 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
+  </header>
   
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
+<!--
+  <header class="header mb-4">
+    <div class="container d-flex flex-wrap align-items-center">
+      <a href="./racewiki.html" class="text-decoration-none">
+        <h1 class="display-5">RaceWiki</h1>
+      </a>
+      <div class="ms-auto d-none d-lg-block">
+        <form action="/search" method="get" class="me-2">
+          <div class="input-group">
+            <input type="text" class="form-control" name="query" placeholder="Search...">
+            <button type="submit" class="btn btn-outline-danger">Search</button>
           </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-        </div>
-
+        </form>
       </div>
-  
-      <div class="standingsOuterContainer">
-        <div class="categoryTitle">F2</div>
-        <div class="standingsSlider">
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-  
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
+      <nav class="nav mt-2 mt-lg-0 w-100 w-lg-auto">
+        <a class="nav-link" href="/f1">F1</a>
+        <a class="nav-link" href="/f2">F2</a>
+        <a class="nav-link" href="/motogp">MotoGP</a>
+        <a class="nav-link" href="/indycar">IndyCar</a>
+        <a class="nav-link btn btn-outline-danger ms-auto" href="/login">Sign in</a>
+        <a class="nav-link btn btn-outline-warning ms-2" href="/control-panel">Control Panel</a>
+      </nav>
+      <form action="/search" method="get" class="mt-2 d-lg-none w-100">
+        <div class="input-group">
+          <input type="text" class="form-control" name="query" placeholder="Search...">
+          <button type="submit" class="btn btn-outline-danger">Search</button>
         </div>
-
-      </div>
-
-      <div class="standingsOuterContainer"> 
-        <div class="categoryTitle">F3</div>
-        <div class="standingsSlider">
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-  
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-        </div>
-
-      </div>
-
-      <div class="standingsOuterContainer">
-        <div class="categoryTitle">Formula E</div>
-        <div class="standingsSlider">
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-  
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-        </div>
-
-      </div>
-
-      <div class="standingsOuterContainer">
-        <div class="categoryTitle">MotoGP</div>
-        <div class="standingsSlider">
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-  
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-        </div>
-
-      </div>
-
-      <div class="standingsOuterContainer">
-        <div class="categoryTitle">Moto2</div>
-        <div class="standingsSlider">
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-  
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-        </div>
-
-      </div>
-
-      <div class="standingsOuterContainer">
-        <div class="categoryTitle">Moto3</div>
-        <div class="standingsSlider">
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-  
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-        </div>
-
-      </div> 
-      
-      <div class="standingsOuterContainer">
-        <div class="categoryTitle">IndyCar</div>
-        <div class="standingsSlider">
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-  
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-        </div>
-
-      </div>
-
-      <div class="standingsOuterContainer">
-        <div class="categoryTitle">Nascar</div>
-        <div class="standingsSlider">
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-  
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-    
-          <div class="standingsInnerContainer">
-            <div class="driverStanding">1</div>
-            <div class="driverPicture"> <img src="/assets/images/verstappen.png" width="75" height="75" alt="Max Verstappen"></div>
-    
-            <div class="driverInfo">
-              <div class="driverName">Max Verstappen</div>
-              <div class="driverTeam">Red Bull Racing Honda</div>
-              <div class="driverPoints">30 pt</div>
-            </div>
-    
-          </div>
-        </div>
-
-      </div>
-
+      </form>
     </div>
-  
+  </header>
+-->
+  <main class="container">
+    <h2 class="mb-3">World Standings</h2>
+
+    <!-- F1 -->
+    <div class="card mb-4">
+      <h3 class="card-header">
+        <button class="btn btn-link text-decoration-none text-reset d-block w-100 text-start p-0 d-flex justify-content-between align-items-center" type="button"
+                data-bs-toggle="collapse" data-bs-target="#formula1-standings" aria-expanded="false" aria-controls="formula1-standings">
+          Formula 1
+          <i class="fas fa-chevron-down"></i>
+        </button>
+      </h3>
+      <div class="collapse" id="formula1-standings">
+        <div class="standings-list">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between">
+              <div>
+                <strong>Driver Full Name</strong><br>
+                <span class="text-muted">Team Name</span>
+              </div>
+              <span>600 points</span>
+            </li>
+            
+            <li class="list-group-item d-flex justify-content-between">
+              <div>
+                <strong>Driver Full Name</strong><br>
+                <span class="text-muted">Team Name</span>
+              </div>
+              <span>600 points</span>
+            </li>
+            
+            <li class="list-group-item d-flex justify-content-between">
+              <div>
+                <strong>Driver Full Name</strong><br>
+                <span class="text-muted">Team Name</span>
+              </div>
+              <span>600 points</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
     
+    <!-- F2 -->
+    <div class="card mb-4">
+      <h3 class="card-header">
+        <button class="btn btn-link text-decoration-none text-reset d-block w-100 text-start p-0 d-flex justify-content-between align-items-center" type="button"
+                data-bs-toggle="collapse" data-bs-target="#formula2-standings" aria-expanded="false" aria-controls="formula2-standings">
+          Formula 2
+          <i class="fas fa-chevron-down"></i>
+        </button>
+      </h3>
+      <div class="collapse" id="formula2-standings">
+        <div class="standings-list">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between">
+              <div>
+                <strong>Driver Full Name</strong><br>
+                <span class="text-muted">Team Name</span>
+              </div>
+              <span>600 points</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    
+    <!-- MotoGP -->
+    <div class="card mb-4">
+      <h3 class="card-header">
+        <button class="btn btn-link text-decoration-none text-reset d-block w-100 text-start p-0 d-flex justify-content-between align-items-center" type="button"
+                data-bs-toggle="collapse" data-bs-target="#motogp-standings" aria-expanded="false" aria-controls="motogp-standings">
+          MotoGP
+          <i class="fas fa-chevron-down"></i>
+        </button>
+      </h3>
+      <div class="collapse" id="motogp-standings">
+        <div class="standings-list">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between">
+              <div>
+                <strong>Driver Full Name</strong><br>
+                <span class="text-muted">Team Name</span>
+              </div>
+              <span>600 points</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <!-- indycar -->
+    <div class="card mb-4">
+      <h3 class="card-header">
+        <button class="btn btn-link text-decoration-none text-reset d-block w-100 text-start p-0 d-flex justify-content-between align-items-center" type="button"
+                data-bs-toggle="collapse" data-bs-target="#indycar-standings" aria-expanded="false" aria-controls="indycar-standings">
+          IndyCar
+          <i class="fas fa-chevron-down"></i>
+        </button>
+      </h3>
+      <div class="collapse" id="indycar-standings">
+        <div class="standings-list">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between">
+              <div>
+                <strong>Driver Full Name</strong><br>
+                <span class="text-muted">Team Name</span>
+              </div>
+              <span>600 points</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    
+  </main>
+  
+  <footer class="footer mt-auto py-3">
+    <div class="container">
+      <p class="text-muted">Â© RaceWiki</p>
+    </div>
+  </footer>
 
-    <!-- Standings Div Ends -->
-
-  </div>
-
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+  <script>
+    const headers = document.querySelectorAll(".card-header button");
+    
+    headers.forEach((header) => {
+        header.addEventListener("click", () => {
+            const isExpanded = header.getAttribute("aria-expanded") === "true";
+            header.parentNode.style.backgroundColor = isExpanded ? "#dc3545" : "transparent";
+            header.parentNode.style.color = isExpanded ? "#fff" : "#dc3545";
+        });
+    });
+  </script>
+  
+  
 </body>
-</html> 
+
+</html>

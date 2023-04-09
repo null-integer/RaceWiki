@@ -15,6 +15,10 @@ app.get('/', async (req, res) => {
 	res.render('homepage');
 });
 
+app.get('/category', async (req, res) =>{
+  res.render('category')
+});
+
 //Start the server
 app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
