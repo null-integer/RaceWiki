@@ -19,6 +19,30 @@ app.get('/category', async (req, res) =>{
   res.render('category')
 });
 
+app.get('/driver', async (req, res) =>{
+  res.render('driver')
+});
+
+app.get('/circuit', async (req, res) =>{
+  res.render('circuit')
+});
+
+app.get('/team', async (req, res) =>{
+  res.render('team')
+});
+
+app.get('/vehicle', async (req, res) =>{
+  res.render('vehicle')
+});
+
+app.get('/season', async (req, res) =>{
+  res.render('season')
+});
+
+app.get('/race', async (req, res) =>{
+  res.render('race')
+});
+
 //Start the server
 app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
