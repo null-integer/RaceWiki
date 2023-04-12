@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RaceWiki - Circuit</title>
+  <title><%= articleTitle %> - RaceWiki</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/homepage.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
@@ -32,10 +32,9 @@
       </div>
       
       <nav class="nav mt-2 mt-lg-0 w-100 w-lg-auto">
-        <a class="nav-link" href="/category">F1</a>
-        <a class="nav-link" href="/category">F2</a>
-        <a class="nav-link" href="/category">MotoGP</a>
-        <a class="nav-link" href="/category">IndyCar</a>
+        <% for (let category of categories) { %>
+          <a class="nav-link" href="/category/<%= category %>"><%= category %></a>
+        <% } %>
         <a href="/signin" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-danger ms-auto">Sign In</a>
         <a href="/controlpanel" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-warning ms-2">Control Panel</a>
       </nav>
@@ -49,55 +48,37 @@
 
     </div>
   </header>
-
-  <!--
-    Sections Needed:
-        Turns
-
-    General Info Needed:
-        Country
-        City
-        Length
-        Turns
-        Lap Record
-  -->
     
   <main class="container">
     <div class="row">
       
-      <h1 class="topic-title mb-4">Circuit Name</h1>
+      <h1 class="topic-title mb-4"><%= articleTitle %></h1>
 
       <!-- Left side navigation column -->
       <nav class="col-md-3 pe-md-4 d-none d-md-block">
         <ul class="nav flex-column">
-          <li><a href="#section1">Section 1</a></li>
-          <li><a href="#section2">Section 2</a></li>
-          <li><a href="#section3">Section 3</a></li>
-          <li><a href="#section4">Section 4</a></li>
+          <% for (let section of sections) { %>
+            <li><a href="#<%= section %>"><%= section %></a></li>
+          <% } %>
         </ul>
       </nav>
       <!-- Main content column -->
 
 
       <section class="col-md-6">
-        <h2 id="section1">Section 1</h2>
-            <p>Content for section 1 goes here...</p>
-        <h2 id="section2">Section 2</h2>
-          <p>Content for section 2 goes here...</p>
-        <h2 id="section3">Section 3</h2>
-          <p>Content for section 3 goes here...</p>
-        <h2 id="section4">Section 4</h2>
-          <p>Content for section 4 goes here...</p>
+        <% for (let section of sections) { %>
+          <h2 id="<%= section %>"><%= section %></h2>
+          <p>Content for section goes here...</p>        
+        <% } %>
       </section>
       <!-- Right side sidebar column -->
       <aside class="col-md-3 ps-md-4">
         <div class="card">
           <div class="card-body">
             <h5 class="card-title">General Info</h5>
-                <p class="card-text">General Info</p>
-                <p class="card-text">General Info</p>
-                <p class="card-text">General Info</p>
-                <p class="card-text">General Info</p>
+            <% for (let info of generalInfo) { %>
+              <p class="card-text"><%= info %></p>       
+            <% } %>
           </div>
         </div>
       </aside>

@@ -33,10 +33,9 @@
       </div>
       
       <nav class="nav mt-2 mt-lg-0 w-100 w-lg-auto">
-        <a class="nav-link" href="/category">F1</a>
-        <a class="nav-link" href="/category">F2</a>
-        <a class="nav-link" href="/category">MotoGP</a>
-        <a class="nav-link" href="/category">IndyCar</a>
+        <% for (let category of categories) { %>
+          <a class="nav-link" href="/category/<%= category %>"><%= category %></a>
+        <% } %>
         <a href="/signin" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-danger ms-auto">Sign In</a>
         <a href="/controlpanel" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-warning ms-2">Control Panel</a>
       </nav>
@@ -51,153 +50,49 @@
     </div>
   </header>
   
-<!--
-  <header class="header mb-4">
-    <div class="container d-flex flex-wrap align-items-center">
-      <a href="./racewiki.html" class="text-decoration-none">
-        <h1 class="display-5">RaceWiki</h1>
-      </a>
-      <div class="ms-auto d-none d-lg-block">
-        <form action="/search" method="get" class="me-2">
-          <div class="input-group">
-            <input type="text" class="form-control" name="query" placeholder="Search...">
-            <button type="submit" class="btn btn-outline-danger">Search</button>
-          </div>
-        </form>
-      </div>
-      <nav class="nav mt-2 mt-lg-0 w-100 w-lg-auto">
-        <a class="nav-link" href="/f1">F1</a>
-        <a class="nav-link" href="/f2">F2</a>
-        <a class="nav-link" href="/motogp">MotoGP</a>
-        <a class="nav-link" href="/indycar">IndyCar</a>
-        <a class="nav-link btn btn-outline-danger ms-auto" href="/login">Sign in</a>
-        <a class="nav-link btn btn-outline-warning ms-2" href="/control-panel">Control Panel</a>
-      </nav>
-      <form action="/search" method="get" class="mt-2 d-lg-none w-100">
-        <div class="input-group">
-          <input type="text" class="form-control" name="query" placeholder="Search...">
-          <button type="submit" class="btn btn-outline-danger">Search</button>
-        </div>
-      </form>
-    </div>
-  </header>
--->
   <main class="container">
     <h2 class="mb-3">World Standings</h2>
 
-    <!-- F1 -->
-    <div class="card mb-4">
-      <h3 class="card-header">
-        <button class="btn btn-link text-decoration-none text-reset d-block w-100 text-start p-0 d-flex justify-content-between align-items-center" type="button"
-                data-bs-toggle="collapse" data-bs-target="#formula1-standings" aria-expanded="false" aria-controls="formula1-standings">
-          Formula 1
-          <i class="fas fa-chevron-down"></i>
-        </button>
-      </h3>
-      <div class="collapse" id="formula1-standings">
-        <div class="standings-list">
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item d-flex justify-content-between">
-              <div>
-                <strong>Driver Full Name</strong><br>
-                <span class="text-muted">Team Name</span>
-              </div>
-              <span>600 points</span>
-            </li>
-            
-            <li class="list-group-item d-flex justify-content-between">
-              <div>
-                <strong>Driver Full Name</strong><br>
-                <span class="text-muted">Team Name</span>
-              </div>
-              <span>600 points</span>
-            </li>
-            
-            <li class="list-group-item d-flex justify-content-between">
-              <div>
-                <strong>Driver Full Name</strong><br>
-                <span class="text-muted">Team Name</span>
-              </div>
-              <span>600 points</span>
-            </li>
-          </ul>
+    <% for (let category of categories) { %>
+      <div class="card mb-4">
+        <h3 class="card-header">
+          <button class="btn btn-link text-decoration-none text-reset d-block w-100 text-start p-0 d-flex justify-content-between align-items-center" type="button"
+                  data-bs-toggle="collapse" data-bs-target="#<%= category.replace(/\s/g, ''); %>-standings" aria-expanded="false" aria-controls="<%= category.replace(/\s/g, ''); %>-standings">
+            <%= category %>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+        </h3>
+        <div class="collapse" id="<%= category.replace(/\s/g, ''); %>-standings">
+          <div class="standings-list">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item d-flex justify-content-between">
+                <div>
+                  <strong>Driver Full Name</strong><br>
+                  <span class="text-muted">Team Name</span>
+                </div>
+                <span>600 points</span>
+              </li>
+              
+              <li class="list-group-item d-flex justify-content-between">
+                <div>
+                  <strong>Driver Full Name</strong><br>
+                  <span class="text-muted">Team Name</span>
+                </div>
+                <span>600 points</span>
+              </li>
+              
+              <li class="list-group-item d-flex justify-content-between">
+                <div>
+                  <strong>Driver Full Name</strong><br>
+                  <span class="text-muted">Team Name</span>
+                </div>
+                <span>600 points</span>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
-    </div>
-    
-    <!-- F2 -->
-    <div class="card mb-4">
-      <h3 class="card-header">
-        <button class="btn btn-link text-decoration-none text-reset d-block w-100 text-start p-0 d-flex justify-content-between align-items-center" type="button"
-                data-bs-toggle="collapse" data-bs-target="#formula2-standings" aria-expanded="false" aria-controls="formula2-standings">
-          Formula 2
-          <i class="fas fa-chevron-down"></i>
-        </button>
-      </h3>
-      <div class="collapse" id="formula2-standings">
-        <div class="standings-list">
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item d-flex justify-content-between">
-              <div>
-                <strong>Driver Full Name</strong><br>
-                <span class="text-muted">Team Name</span>
-              </div>
-              <span>600 points</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    
-    
-    <!-- MotoGP -->
-    <div class="card mb-4">
-      <h3 class="card-header">
-        <button class="btn btn-link text-decoration-none text-reset d-block w-100 text-start p-0 d-flex justify-content-between align-items-center" type="button"
-                data-bs-toggle="collapse" data-bs-target="#motogp-standings" aria-expanded="false" aria-controls="motogp-standings">
-          MotoGP
-          <i class="fas fa-chevron-down"></i>
-        </button>
-      </h3>
-      <div class="collapse" id="motogp-standings">
-        <div class="standings-list">
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item d-flex justify-content-between">
-              <div>
-                <strong>Driver Full Name</strong><br>
-                <span class="text-muted">Team Name</span>
-              </div>
-              <span>600 points</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    
-    <!-- indycar -->
-    <div class="card mb-4">
-      <h3 class="card-header">
-        <button class="btn btn-link text-decoration-none text-reset d-block w-100 text-start p-0 d-flex justify-content-between align-items-center" type="button"
-                data-bs-toggle="collapse" data-bs-target="#indycar-standings" aria-expanded="false" aria-controls="indycar-standings">
-          IndyCar
-          <i class="fas fa-chevron-down"></i>
-        </button>
-      </h3>
-      <div class="collapse" id="indycar-standings">
-        <div class="standings-list">
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item d-flex justify-content-between">
-              <div>
-                <strong>Driver Full Name</strong><br>
-                <span class="text-muted">Team Name</span>
-              </div>
-              <span>600 points</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    
+    <% } %>
     
   </main>
   
