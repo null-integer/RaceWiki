@@ -39,7 +39,9 @@ app.get('/signin', async (req, res) => {
 
 //Control Panel 
 app.get('/controlpanel', async (req, res) => {
-	res.render('controlPanel');
+	res.render('controlPanel',{
+    categories:categories,
+  });
 });
 
 //Articles
