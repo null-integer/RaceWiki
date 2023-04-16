@@ -1,5 +1,8 @@
 //Import required modules
 const express = require('express');
+const sqlite3 = require('sqlite3');
+const { open } = require('sqlite');
+const Database = require('./models/Database');
 
 //Instantiate modules
 const app = express();
@@ -10,68 +13,23 @@ app.use(express.static(`${__dirname}/static`))
 const hostname = '127.0.0.1';
 const port = 3000;
 
-//Mock Database
-categories = [
-  "F1",
-  "F2",
-  "F3",
-  "FE",
-  "IndyCar",
-  "MotoGP",
-  "Moto2",
-  "Nascar"
-];
-
-let mockDatabase = {
-  "category": [
-    {"categoryID":0, "categoryName":"F1", "description":"", "rules":"", "Drivers": 20, "Teams": 10, "pictureURL":"" },
-    {"categoryID":1, "categoryName":"F2", "description":"", "rules":"","Drivers": 22, "Teams": 11, "pictureURL":""},
-    {"categoryID":2, "categoryName":"F3", "description":"", "rules":"","Drivers": 30, "Teams": 10, "pictureURL":""},
-    {"categoryID":3, "categoryName":"IndyCar","description":"", "rules":"","Drivers": 34, "Teams": 12, "pictureURL":""},
-    {"categoryID":4, "categoryName":"MotoGP", "description":"", "rules":"","Drivers": 30, "Teams": 15, "pictureURL":""},
-    {"categoryID":5, "categoryName":"Moto2", "description":"", "rules":"","Drivers": 30, "Teams": 15, "pictureURL":""},
-    {"categoryID":6, "categoryName":"Nascar", "description":"", "rules":"","Drivers": 30, "Teams": 15, "pictureURL":""},
-  ],
-  "flagType": [
-    {"flagTypeID":0, categoryID: 0, "flagMeaning": "", "pictureURL":""}
-  ],
-  "season":[
-    {"seasonID":0, "categoryID":0, "seasonYear":2020, "scoringSystem":" "}
-  ],
-  "raceWeekend":[
-    {"raceWeekendID":0, "categoryID":0, "raceDate":"", "practiceSessionID":0, "qualifyingID":0, "raceID":0, "circuitID":0, "RaceName":""}
-  ],
-  "PracticeSession":[
-    {"practiceSessionID":0, "sessionDate":"", "sessionTime":"", "resultID":0, "weather":" "}
-  ],
-  "QualifyingSession":[
-    {"qualifyingSessionID":0, "sessionDate":"", "sessionTime":"", "resultID":0, "weather":" "}
-  ],
-  "QualifyingSession":[
-    {"qualifyingSessionID":0, "sessionDate":"", "sessionTime":"", "resultID":0, "weather":" "}
-  ],
-  "Race":[
-    {"RaceID":0, "raceDate":"", "racetime":"", "resultID":0, "weather":"", "raceDuration":0, "laps":0, "fastestLaptime":"","fastestLapDriverID":0}
-  ],
-  "result":[
-    {"raceweekendID":0, "driverID":0, "sessionType":"", "position":0, "lapsLead":0}
-  ],
-  "team":[
-    {"teamID":0, "categoryID":0, "TeamName":" ", "baseLocation":" ", "pictureURL":" "}
-  ],
-  "driver":[
-    {"driverID":0, "firstName":" ", "lastName":" ", "driverNumber": "", "DoB":"", "nationality":" ", "penaltyPoints":" ", "pictureURL":""}
-  ],
-  "drove":[
-    {"seasonID":0, "teamID":0, "driverID":0}
-  ]
-};
+//connect to the database
+let db;
+(async () => {
+	db = await open({
+		filename: 'RaceWikiDB.db',
+		driver: sqlite3.Database
+	});
+})();
 
 //Routes
 
 //Main Homepage
 app.get('/', async (req, res) => {
 
+  let categories = await Database.findAllCategories(db);
+  categories = categories.map(x => x.category_name);
+  
 	res.render('homepage', {
     categories:categories,
   });
@@ -84,6 +42,8 @@ app.get('/signin', async (req, res) => {
 
 //Control Panel 
 app.get('/controlpanel', async (req, res) => {
+  let categories = await Database.findAllCategories(db);
+  categories = categories.map(x => x.category_name);
 	res.render('controlPanel',{
     categories:categories,
   });
@@ -92,21 +52,30 @@ app.get('/controlpanel', async (req, res) => {
 //Articles
 app.get('/category/:categoryName', async (req, res) =>{
 
+  let categories = await Database.findAllCategories(db);
+  categories = categories.map(x => x.category_name);
+
+
+
   if (categories.includes(req.params['categoryName'])){
+
+    let categoryInfo = await Database.findCategorybyName(db,req.params['categoryName']);
+    
+    //first attribute is to indicate if it's tabular data
     let sections = [
-      "Description",
-      "Rules",
-      "Flags",
-      "Championship",
-      "Teams",
-      "Drivers"
+      [false, "Description", categoryInfo.category_description],
+      [false, "Rules", categoryInfo.category_rules],
+      [true,"Flags",""],
+      [true,"Championship",""],
+      [true,"Teams",""],
+      [true,"Drivers",""]
     ];
   
     let generalInfo = [
-      "Drivers",
-      "Teams",
-      "Driver's Champion",
-      "Constructor's Champion"
+      ["Drivers",categoryInfo.category_drivers],
+      ["Teams",categoryInfo.category_teams],
+      ["Driver's Champion",""],
+      ["Constructor's Champion",""]
     ];
   
     let articleTitle = req.params['categoryName'];;
@@ -115,18 +84,19 @@ app.get('/category/:categoryName', async (req, res) =>{
       categories:categories,
       articleTitle: articleTitle,
       sections:sections, 
-      generalInfo:generalInfo
+      generalInfo:generalInfo,
+      pictureURL: categoryInfo.category_picture
     });
   }
   else{
     res.sendStatus(404);
-  }
-
-
-  
+  }  
 });
 
 app.get('/driver', async (req, res) =>{
+
+  let categories = await Database.findAllCategories(db);
+  categories = categories.map(x => x.category_name);
 
   let sections = [
     "Teams",
@@ -160,6 +130,9 @@ app.get('/driver', async (req, res) =>{
 
 app.get('/circuit', async (req, res) =>{
 
+  let categories = await Database.findAllCategories(db);
+  categories = categories.map(x => x.category_name);
+
   let sections = [
     "Turns"
   ];
@@ -183,6 +156,9 @@ app.get('/circuit', async (req, res) =>{
 });
 
 app.get('/team', async (req, res) =>{
+
+  let categories = await Database.findAllCategories(db);
+  categories = categories.map(x => x.category_name);
   
   let sections = [
 
@@ -221,6 +197,9 @@ app.get('/team', async (req, res) =>{
 
 app.get('/vehicle', async (req, res) =>{
 
+  let categories = await Database.findAllCategories(db);
+  categories = categories.map(x => x.category_name);
+
   let sections = [
     "Drivers",
     "Wins",
@@ -230,7 +209,7 @@ app.get('/vehicle', async (req, res) =>{
   ];
 
   let generalInfo = [
-    "Championships",
+    "Team",
     "Engine",
     "Power",
     "Weight",
@@ -252,6 +231,9 @@ app.get('/vehicle', async (req, res) =>{
 });
 
 app.get('/season', async (req, res) =>{
+
+  let categories = await Database.findAllCategories(db);
+  categories = categories.map(x => x.category_name);
 
   let sections = [
     "Scoring System",
@@ -281,6 +263,9 @@ app.get('/season', async (req, res) =>{
 });
 
 app.get('/race', async (req, res) =>{
+
+  let categories = await Database.findAllCategories(db);
+  categories = categories.map(x => x.category_name);
 
   let sections = [
     "Practice Sessions",

@@ -58,7 +58,7 @@
       <nav class="col-md-3 pe-md-4 d-none d-md-block">
         <ul class="nav flex-column">
           <% for (let section of sections) { %>
-            <li><a href="#<%= section %>"><%= section %></a></li>
+            <li><a href="#<%= section[1] %>"><%= section[1] %></a></li>
           <% } %>
         </ul>
       </nav>
@@ -67,17 +67,50 @@
 
       <section class="col-md-6">
         <% for (let section of sections) { %>
-          <h2 id="<%= section %>"><%= section %></h2>
-          <p>Content for section goes here...</p>        
+          <h2 id="<%= section[1] %>"><%= section[1] %></h2>
+          <% if(!section[0]) { %>
+            <p> <%= section[2] %> </p>
+          <% } else { %>  
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">First</th>
+                  <th scope="col">Last</th>
+                  <th scope="col">Handle</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">1</th>
+                  <td>Mark</td>
+                  <td>Otto</td>
+                  <td>@mdo</td>
+                </tr>
+                <tr>
+                  <th scope="row">2</th>
+                  <td>Jacob</td>
+                  <td>Thornton</td>
+                  <td>@fat</td>
+                </tr>
+                <tr>
+                  <th scope="row">3</th>
+                  <td colspan="2">Larry the Bird</td>
+                  <td>@twitter</td>
+                </tr>
+              </tbody>
+            </table>
+          <% } %>
         <% } %>
       </section>
       <!-- Right side sidebar column -->
       <aside class="col-md-3 ps-md-4">
         <div class="card">
+        <img src="<%= pictureURL %>" class="img-fluid border" alt="<%= articleTitle %>">
           <div class="card-body">
             <h5 class="card-title">General Info</h5>
             <% for (let info of generalInfo) { %>
-              <p class="card-text"><%= info %></p>       
+              <p class="card-text"><%= info[0] %>: <%= info[1] %></p>       
             <% } %>
           </div>
         </div>
