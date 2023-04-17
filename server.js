@@ -49,36 +49,44 @@ app.get('/controlpanel', async (req, res) => {
   });
 });
 
+//New Category Page
+app.get('/newcategory', async (req, res) => {
+
+  res.render('newCategory');
+});
+
 //Articles
 app.get('/category/:categoryName', async (req, res) =>{
 
   let categories = await Database.findAllCategories(db);
   categories = categories.map(x => x.category_name);
 
+  categoryName = req.params['categoryName'].replace(/_/g, " ");
 
+  if (categories.includes(categoryName)){
 
-  if (categories.includes(req.params['categoryName'])){
-
-    let categoryInfo = await Database.findCategorybyName(db,req.params['categoryName']);
+    let categoryInfo = await Database.findCategorybyName(db,categoryName);
+    let flags = await Database.findFlagsByCategory(db, categoryName);
+    let teams = await Database.findTeamsByCategory(db, categoryName);
     
     //first attribute is to indicate if it's tabular data
     let sections = [
-      [false, "Description", categoryInfo.category_description],
-      [false, "Rules", categoryInfo.category_rules],
-      [true,"Flags",""],
-      [true,"Championship",""],
-      [true,"Teams",""],
-      [true,"Drivers",""]
+      ["Text", "Description", categoryInfo.category_description],
+      ["Text", "Rules", categoryInfo.category_rules],
+      ["Table","Championship","",[]],
+      ["Table","Teams",teams,[],["Link"], "/team/"+req.params["categoryName"]+"/"],
+      ["Table","Drivers","",[]],
+      ["Table","Flags", flags, ["Icon", "Name", "Meaning"], ["Image","Text","Text"]]
     ];
   
     let generalInfo = [
-      ["Drivers",categoryInfo.category_drivers],
-      ["Teams",categoryInfo.category_teams],
+      ["Drivers",""],
+      ["Teams",""],
       ["Driver's Champion",""],
       ["Constructor's Champion",""]
     ];
   
-    let articleTitle = req.params['categoryName'];;
+    let articleTitle = categoryName;;
   
     res.render('article', {
       categories:categories,
@@ -99,23 +107,23 @@ app.get('/driver', async (req, res) =>{
   categories = categories.map(x => x.category_name);
 
   let sections = [
-    "Teams",
-    "Wins",
-    "Podiums",
-    "Pole Positions",
-    "Results"
+    ["Table","Teams","",[]],
+    ["Table","Wins","",[]],
+    ["Table","Podiums","",[]],
+    ["Table","Pole Positions","",[]],
+    ["Table","Results","",[]],
   ];
 
   let generalInfo = [
-    "Date of Birth",
-    "Number",
-    "Nationality",
-    "Championships",
-    "Penalty Points",
-    "Wins",
-    "Podiums",
-    "Pole Positions",
-    "Fastests Laps"
+    ["Date of Birth",""],
+    ["Number",""],
+    ["Nationality",""],
+    ["Championships",""],
+    ["Penalty Points",""],
+    ["Wins",""],
+    ["Podiums",""],
+    ["Pole Positions",""],
+    ["Fastests Laps",""],
   ];
 
   let articleTitle = "Category Name";
@@ -124,7 +132,8 @@ app.get('/driver', async (req, res) =>{
     categories:categories,
     articleTitle: articleTitle,
     sections:sections, 
-    generalInfo:generalInfo
+    generalInfo:generalInfo,
+    pictureURL:""
   });
 });
 
@@ -155,43 +164,46 @@ app.get('/circuit', async (req, res) =>{
   });
 });
 
-app.get('/team', async (req, res) =>{
+app.get('/team/:categoryName/:teamName', async (req, res) =>{
 
   let categories = await Database.findAllCategories(db);
   categories = categories.map(x => x.category_name);
+
+  let teamInfo = await Database.findTeamByCategory(db,req.params["categoryName"], req.params["teamName"].replace(/_/g," "));
   
   let sections = [
 
-    "Constructor's Championships",
-    "Driver's Championships",
-    "Chassis",
-    "Engines",
-    "Drivers",
-    "Victories",
-    "Podiums",
-    "Pole Positions",
-    "Results"
+    ["Text","Constructor's Championships", ""],
+    ["Text","Driver's Championships", ""],
+    ["Text","Chassis", ""],
+    ["Text","Engines", ""],
+    ["Text","Drivers", ""],
+    ["Text","Victories", ""],
+    ["Text","Podiums", ""],
+    ["Text","Pole Positions", ""],
+    ["Text","Results" , ""],
   ];
 
   let generalInfo = [
-    "Drivers",
-    "Chassis",
-    "Engine",
-    "Constructor's Championships",
-    "Driver's Champsionships",
-    "Victories",
-    "Podiums",
-    "Pole Positions",
-    "Fastests Laps"
+    ["Drivers",""],
+    ["Chassis",""],
+    ["Engine",""],
+    ["Constructor's Championships",""],
+    ["Driver's Champsionships",""],
+    ["Victories",""],
+    ["Podiums",""],
+    ["Pole Positions",""],
+    ["Fastests Laps",""]
   ];
 
-  let articleTitle = "Category Name";
+  let articleTitle = teamInfo.team_name;
 
   res.render('article', {
     categories:categories,
     articleTitle: articleTitle,
     sections:sections, 
-    generalInfo:generalInfo
+    generalInfo:generalInfo,
+    pictureURL: teamInfo.team_picture
   });
 });
 

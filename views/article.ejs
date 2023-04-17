@@ -33,8 +33,9 @@
       
       <nav class="nav mt-2 mt-lg-0 w-100 w-lg-auto">
         <% for (let category of categories) { %>
-          <a class="nav-link" href="/category/<%= category %>"><%= category %></a>
+          <a class="nav-link" href="/category/<%= category.replace(/ /g, '_') %>"><%= category %></a>
         <% } %>
+        <a class="nav-link" href="/newcategory">+</a>
         <a href="/signin" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-danger ms-auto">Sign In</a>
         <a href="/controlpanel" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-warning ms-2">Control Panel</a>
       </nav>
@@ -68,36 +69,33 @@
       <section class="col-md-6">
         <% for (let section of sections) { %>
           <h2 id="<%= section[1] %>"><%= section[1] %></h2>
-          <% if(!section[0]) { %>
+          <% if(section[0] == "Text") { %>
             <p> <%= section[2] %> </p>
-          <% } else { %>  
+          <% } else if (section[0] == "Table") { %>  
             <table class="table table-bordered">
               <thead>
                 <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">First</th>
-                  <th scope="col">Last</th>
-                  <th scope="col">Handle</th>
+                  <% for (let headItem of section[3]) { %>
+                    <th scope="col"><%=  headItem %></th>
+                  <% } %>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <th scope="row">1</th>
-                  <td>Mark</td>
-                  <td>Otto</td>
-                  <td>@mdo</td>
-                </tr>
-                <tr>
-                  <th scope="row">2</th>
-                  <td>Jacob</td>
-                  <td>Thornton</td>
-                  <td>@fat</td>
-                </tr>
-                <tr>
-                  <th scope="row">3</th>
-                  <td colspan="2">Larry the Bird</td>
-                  <td>@twitter</td>
-                </tr>
+                <% for (let sectionObject of section[2]) { %>
+                  <tr>
+                    <% let counter = 0; %>
+                    <% for (let key in sectionObject) { %>
+                      <% if (section[4][counter] == "Text") { %>
+                        <td><%= sectionObject[key] %></td>
+                      <% } else if (section[4][counter] == "Image"){ %>
+                        <td><img class="img-fluid border" src="<%= sectionObject[key] %>"  alt=""></td>
+                      <% } else if (section[4][counter] == "Link"){ %>
+                        <td><a href="<%= section[5] %><%= sectionObject[key].replace(/ /g, '_'); %>"><%= sectionObject[key] %></a></td>
+                      <% } %>  
+                      <% counter += 1; %>
+                    <% } %>  
+                  </tr>                
+                <% } %>
               </tbody>
             </table>
           <% } %>

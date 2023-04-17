@@ -10,6 +10,25 @@ class Databse{
         return result;
     }
 
+    static async findFlagsByCategory(db, categoryName){
+      const result = await db.all(`SELECT flag_icon, flag_name, flag_meaning FROM flag WHERE flag_ID in 
+      (SELECT flag_ID FROM categoryFlag WHERE category_ID = 
+        (SELECT category_ID FROM category WHERE category_name = ?));`,[categoryName]);
+      return result;
+    }
+
+    static async findTeamsByCategory(db, categoryName){
+      const result = await db.all(`SELECT team_name FROM team WHERE category_ID = 
+        (SELECT category_ID FROM category WHERE category_name = ?)`,[categoryName]);
+      return result;
+    }
+
+    static async findTeamByCategory(db, categoryName, teamName){
+      const result = await db.get(`SELECT * FROM team WHERE category_ID = 
+        (SELECT category_ID FROM category WHERE category_name = ?) AND team_name = ?`,[categoryName, teamName]);
+      return result;
+    }
+
 }
 
 

@@ -34,8 +34,9 @@
       
       <nav class="nav mt-2 mt-lg-0 w-100 w-lg-auto">
         <% for (let category of categories) { %>
-          <a class="nav-link" href="/category/<%= category %>"><%= category %></a>
+          <a class="nav-link" href="/category/<%= category.replace(/ /g, '_') %>"><%= category %></a>
         <% } %>
+        <a class="nav-link" href="/newcategory">+</a>
         <a href="/signin" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-danger ms-auto">Sign In</a>
         <a href="/controlpanel" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-warning ms-2">Control Panel</a>
       </nav>

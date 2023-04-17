@@ -137,3 +137,6 @@ table.table td input{
     margin-top: 10px;
     font-size: 13px;
 }
+#searchID{
+    width: 5%;
+}
