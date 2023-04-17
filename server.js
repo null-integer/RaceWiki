@@ -68,12 +68,13 @@ app.get('/category/:categoryName', async (req, res) =>{
     let categoryInfo = await Database.findCategorybyName(db,categoryName);
     let flags = await Database.findFlagsByCategory(db, categoryName);
     let teams = await Database.findTeamsByCategory(db, categoryName);
-    
+    let seasons = await Database.findSeasonsByCategory(db,categoryName);
+
     //first attribute is to indicate if it's tabular data
     let sections = [
       ["Text", "Description", categoryInfo.category_description],
       ["Text", "Rules", categoryInfo.category_rules],
-      ["Table","Championship","",[]],
+      ["Table","Championships",seasons,["Season Year"],["Link"],"/season/"+req.params["categoryName"]+"/"],
       ["Table","Teams",teams,[],["Link"], "/team/"+req.params["categoryName"]+"/"],
       ["Table","Drivers","",[]],
       ["Table","Flags", flags, ["Icon", "Name", "Meaning"], ["Image","Text","Text"]]
@@ -242,35 +243,36 @@ app.get('/vehicle', async (req, res) =>{
   });
 });
 
-app.get('/season', async (req, res) =>{
+app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
 
   let categories = await Database.findAllCategories(db);
   categories = categories.map(x => x.category_name);
 
   let sections = [
-    "Scoring System",
-    "Entries",
-    "Calendar",
-    "Results",
-    "Driver's Standings",
-    "Constructor's Standings"
+    ["Text","Scoring System",""],
+    ["Text","Entries",""],
+    ["Text","Calendar",""],
+    ["Text","Results",""],
+    ["Text","Driver's Standings",""],
+    ["Text","Constructor's Standings",""],
   ];
 
   let generalInfo = [
-    "Year",
-    "Season #",
-    "Races",
-    "Driver's Champion",
-    "Constructor's Champion"
+    ["Year",""],
+    ["Season #",""],
+    ["Races",""],
+    ["Driver's Champion",""],
+    ["Constructor's Champion",""],
   ];
 
-  let articleTitle = "Category Name";
+  let articleTitle = req.params["seasonYear"]+ " "+req.params["categoryName"]+" Season";
 
   res.render('article', {
     categories:categories,
     articleTitle: articleTitle,
     sections:sections, 
-    generalInfo:generalInfo
+    generalInfo:generalInfo,
+    pictureURL: ""
   });
 });
 

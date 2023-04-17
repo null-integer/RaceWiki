@@ -29,6 +29,15 @@ class Databse{
       return result;
     }
 
+    static async findSeasonsByCategory(db, categoryName){
+      let result = await db.all(`SELECT season_year FROM season WHERE category_ID = 
+      (SELECT category_ID FROM category WHERE category_name = ?)`,[categoryName]);
+      for(let row of result){
+        row.season_year = row.season_year + "";
+      }
+      return result;
+    }
+
 }
 
 
