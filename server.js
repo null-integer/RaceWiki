@@ -3,6 +3,7 @@ const express = require('express');
 const sqlite3 = require('sqlite3');
 const { open } = require('sqlite');
 const Database = require('./models/Database');
+const User = require('./models/User');
 
 //Instantiate modules
 const app = express();
@@ -39,6 +40,30 @@ app.get('/', async (req, res) => {
 app.get('/signin', async (req, res) => {
 	res.render('signin');
 });
+
+//check credential in User db
+app.post('/signin',(req,res)=>{
+  let errors = [];
+  let username = req.body.username.trim();
+  let pw = req.body.password.trim();
+  if(username.length==0){
+    errors.push({msg:"Please enter username"});
+  }
+  User.findOne({where: {username:username}}).then(user=>{
+    if(user){
+      bcrypt.compare(pw,user.pwhash,(err,match)=>{
+        if(match){}
+        else{
+          errors.push({msg:"Username and password is incorrect"});
+          res.render('login',{
+            errors:errors
+          })
+        }
+      })
+    }
+  })
+
+})
 
 //Control Panel 
 app.get('/controlpanel', async (req, res) => {
