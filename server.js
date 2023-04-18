@@ -186,6 +186,7 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
   ];
 
   let generalInfo = [
+    ["Team Base", teamInfo.team_base_location],
     ["Drivers",""],
     ["Chassis",""],
     ["Engine",""],
@@ -248,9 +249,15 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
   let categories = await Database.findAllCategories(db);
   categories = categories.map(x => x.category_name);
 
+  categoryName = req.params['categoryName'].replace(/_/g, " ");
+  let seasonInfo = await Database.findSeasonByCategoryandYear(db, categoryName, req.params["seasonYear"]);
+
+  scoringSystem = [];
+  let scoringArray = seasonInfo.season_scoring.split(",")
+  for (var i = 0; i < scoringArray.length - 1; i++) { scoringSystem.push( {"position": i+1, "score":scoringArray[i] } ); }
+
   let sections = [
-    ["Text","Scoring System",""],
-    ["Text","Entries",""],
+    ["Table","Scoring System",scoringSystem, ["Position","Points"],["Text","Text"]],
     ["Text","Calendar",""],
     ["Text","Results",""],
     ["Text","Driver's Standings",""],
@@ -258,7 +265,7 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
   ];
 
   let generalInfo = [
-    ["Year",""],
+    ["Year", seasonInfo.season_year],
     ["Season #",""],
     ["Races",""],
     ["Driver's Champion",""],

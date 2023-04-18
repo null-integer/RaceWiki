@@ -38,6 +38,16 @@ class Databse{
       return result;
     }
 
+    static async findSeasonByCategoryandYear(db, categoryName, seasonYear){
+      let result = await db.get(`SELECT * FROM season WHERE category_ID = 
+      (SELECT category_ID FROM category WHERE category_name = ?) AND season_year = ?`,[categoryName, parseInt(seasonYear)]);
+      return result;
+    }
+
+    static async findCalendar(db, categoryName, seasonYear){
+      
+    }
+
 }
 
 

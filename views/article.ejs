@@ -68,7 +68,11 @@
 
       <section class="col-md-6">
         <% for (let section of sections) { %>
-          <h2 id="<%= section[1] %>"><%= section[1] %></h2>
+          <h2 id="<%= section[1] %>"><%= section[1] %> 
+            <% if(section[0] == "Table") { %>
+              <button type="button" class="btn btn-success" id="<%= section[1] %>button">+</button>            
+            <% } %>
+          </h2>
           <% if(section[0] == "Text") { %>
             <p> <%= section[2] %> </p>
           <% } else if (section[0] == "Table") { %>  
