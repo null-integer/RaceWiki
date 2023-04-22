@@ -283,8 +283,10 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
   let seasonInfo = await Database.findSeasonByCategoryandYear(db, categoryName, req.params["seasonYear"]);
 
   scoringSystem = [];
-  let scoringArray = seasonInfo.season_scoring.split(",")
-  for (var i = 0; i < scoringArray.length - 1; i++) { scoringSystem.push( {"position": i+1, "score":scoringArray[i] } ); }
+  let scoringArray = seasonInfo.season_scoring.split(",");
+  scoringArray.forEach(score => {
+    scoringSystem.push({"position":score.split(":")[0], "points":score.split(":")[1]});
+  });
 
   let sections = [
     ["Table","Scoring System",scoringSystem, ["Position","Points"],["Text","Text"]],
