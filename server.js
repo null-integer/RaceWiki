@@ -90,12 +90,15 @@ app.get('/category/:categoryName', async (req, res) =>{
 
   if (categories.includes(categoryName)){
 
+    //Fetching needed info from database
     let categoryInfo = await Database.findCategorybyName(db,categoryName);
     let flags = await Database.findFlagsByCategory(db, categoryName);
     let teams = await Database.findTeamsByCategory(db, categoryName);
     let seasons = await Database.findSeasonsByCategory(db,categoryName);
 
-    //first attribute is to indicate if it's tabular data
+    //Section Data
+    //[Type of data in section, Section Title, Section Data, ...OPTIONS]
+    //Table Options = [Table Headings],[Type of Data in table]
     let sections = [
       ["Text", "Description", categoryInfo.category_description],
       ["Text", "Rules", categoryInfo.category_rules],
@@ -105,6 +108,7 @@ app.get('/category/:categoryName', async (req, res) =>{
       ["Table","Flags", flags, ["Icon", "Name", "Meaning"], ["Image","Text","Text"]]
     ];
   
+    //General Info Data
     let generalInfo = [
       ["Drivers",""],
       ["Teams",""],
@@ -112,15 +116,16 @@ app.get('/category/:categoryName', async (req, res) =>{
       ["Constructor's Champion",""]
     ];
   
-    let articleTitle = categoryName;;
+    let articleTitle = categoryName;
   
     res.render('article', {
-      categories:categories,
       articleTitle: articleTitle,
+      categories:categories,
       sections:sections, 
       generalInfo:generalInfo,
       pictureURL: categoryInfo.category_picture
     });
+
   }
   else{
     res.sendStatus(404);

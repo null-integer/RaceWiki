@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= articleTitle %> - RaceWiki</title>
+
+  <!-- Linking Needed files -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/homepage.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
@@ -53,9 +55,16 @@
   <main class="container">
     <div class="row">
       
+      <!-- Article Title -->
       <h1 class="topic-title mb-4"><%= articleTitle %></h1>
 
-      <!-- Left side navigation column -->
+      <!-- Form Div For New Objects (Should not be visible to normal users)-->
+      <div id="NewFormDiv" onclick="hideForm()">
+        <form id="NewForm" action="">
+        </form> 
+      </div>
+
+      <!-- Left side navigation column (Shorcuts) -->
       <nav class="col-md-3 pe-md-4 d-none d-md-block">
         <ul class="nav flex-column">
           <% for (let section of sections) { %>
@@ -63,20 +72,32 @@
           <% } %>
         </ul>
       </nav>
+
       <!-- Main content column -->
-
-
       <section class="col-md-6">
+
+        <!-- Traverse Each Section -->
         <% for (let section of sections) { %>
-          <h2 id="<%= section[1] %>"><%= section[1] %> 
+
+          <!-- Section Title -->
+          <h2 id="<%= section[1] %>"><%= section[1] %>
+
+            <!-- Adding an add button to section (Should not be visible to normal users)-->
             <% if(section[0] == "Table") { %>
               <button type="button" class="btn btn-success" id="<%= section[1] %>button">+</button>            
             <% } %>
+
           </h2>
+
+          <!-- If section is text, just display the text -->
           <% if(section[0] == "Text") { %>
-            <p> <%= section[2] %> </p>
+            <p id="<%= section[1] %>Text" ondblclick="EditText('<%= section[1] %>Text')"> <%= section[2] %> </p>
+
+          <!-- If section is tabular data -->
           <% } else if (section[0] == "Table") { %>  
             <table class="table table-bordered">
+
+              <!-- Table headings -->
               <thead>
                 <tr>
                   <% for (let headItem of section[3]) { %>
@@ -84,15 +105,19 @@
                   <% } %>
                 </tr>
               </thead>
+
               <tbody>
                 <% for (let sectionObject of section[2]) { %>
                   <tr>
                     <% let counter = 0; %>
                     <% for (let key in sectionObject) { %>
+                      <!-- If table data is just text -->
                       <% if (section[4][counter] == "Text") { %>
                         <td><%= sectionObject[key] %></td>
+                      <!-- If table data is an image -->
                       <% } else if (section[4][counter] == "Image"){ %>
                         <td><img class="img-fluid border" src="<%= sectionObject[key] %>"  alt=""></td>
+                      <!-- If table is a link -->
                       <% } else if (section[4][counter] == "Link"){ %>
                         <td><a href="<%= section[5] %><%= sectionObject[key].replace(/ /g, '_'); %>"><%= sectionObject[key] %></a></td>
                       <% } %>  
@@ -105,7 +130,8 @@
           <% } %>
         <% } %>
       </section>
-      <!-- Right side sidebar column -->
+
+      <!-- Right side sidebar column (General Info)-->
       <aside class="col-md-3 ps-md-4">
         <div class="card">
         <img src="<%= pictureURL %>" class="img-fluid border" alt="<%= articleTitle %>">
@@ -117,6 +143,7 @@
           </div>
         </div>
       </aside>
+
     </div>
   </main>
 
@@ -126,5 +153,7 @@
     </div>
   </footer>
     
+  <!-- This Script should not be imported for normal users -->
+  <script type="text/javascript" src="/js/article.js"></script>
 </body>
 </html>
