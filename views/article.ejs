@@ -59,7 +59,7 @@
       <h1 class="topic-title mb-4"><%= articleTitle %></h1>
 
       <!-- Form Div For New Objects (Should not be visible to normal users)-->
-      <div id="NewFormDiv" onkeyup="hideForm()">
+      <div id="NewFormDiv">
         <form id="NewForm" action="">
         </form> 
       </div>
@@ -84,7 +84,7 @@
 
             <!-- Adding an add button to section (Should not be visible to normal users)-->
             <% if(section[0] == "Table") { %>
-              <button type="button" class="btn btn-success" id="<%= section[1] %>Button" onclick="showForm('<%= section[1] %>Button')">+</button>            
+              <button type="button" class="btn btn-success" id="<%= section[1] %>Button" onclick="showForm('<%= section[1] %>Button','<%= relation %>')">+</button>            
             <% } %>
 
           </h2>

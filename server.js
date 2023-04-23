@@ -9,6 +9,7 @@ const User = require('./models/User');
 const app = express();
 app.set('view engine','ejs');
 app.use(express.static(`${__dirname}/static`))
+app.use(express.urlencoded({extended: false}));
 
 //Host name and port
 const hostname = '127.0.0.1';
@@ -123,7 +124,8 @@ app.get('/category/:categoryName', async (req, res) =>{
       categories:categories,
       sections:sections, 
       generalInfo:generalInfo,
-      pictureURL: categoryInfo.category_picture
+      pictureURL: categoryInfo.category_picture,
+      relation: req.params['categoryName'].replace(/_/g, " ")
     });
 
   }
@@ -131,6 +133,37 @@ app.get('/category/:categoryName', async (req, res) =>{
     res.sendStatus(404);
   }  
 });
+
+app.post('/category/:categoryName/season',async (req, res) =>{
+  let year = req.body.seasonYearinput;
+  let scoring = req.body.scoringInput.split("\r\n").join(",");
+
+  Database.newSeason(db, req.params["categoryName"], year, scoring);
+  res.redirect(req.get('referer'));
+});
+
+app.post('/category/:categoryName/team',async (req, res) =>{
+  
+  let teamName = req.body.teamNameinput;
+  let teamBaselocation = req.body.teamLocationinput;
+  let teamPictureURL = req.body.teamPictureURLinput;
+
+  Database.newTeam(db, req.params["categoryName"],teamName,teamBaselocation,teamPictureURL);
+
+  res.redirect(req.get('referer'));
+});
+
+app.post('/category/:categoryName/flag',async (req, res) =>{
+  
+  let flagName = req.body.flagNameinput;
+  let flagIcon = req.body.flagIconURLinput;
+  let flagMeaning = req.body.flagMeaninginput;
+
+  Database.newFlag(db, req.params["categoryName"], flagName,flagIcon, flagMeaning);
+
+  res.redirect(req.get('referer'));
+});
+
 
 app.get('/driver', async (req, res) =>{
 
