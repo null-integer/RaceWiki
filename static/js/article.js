@@ -90,6 +90,47 @@ function populateForm(buttonID,relation){
         
         break;
         
+        case "Scoring SystemButton":
+            
+            //Form Title 
+            formTitle.innerHTML = "New Scoring Position";
+            form.appendChild(formTitle);
+            form.action = "/season/"+relation+"/scoring";
+
+            //position
+            addLabelAndText(form,"Position:","positionInput");
+
+            //points
+            addLabelAndText(form,"Points","pointsInput");
+
+        break;
+
+        case "CalendarButton":
+
+            //Form Title 
+            formTitle.innerHTML = "New Race";
+            form.appendChild(formTitle);
+            form.action = "/season/"+relation+"/race";
+
+            //Race Name
+            addLabelAndText(form,"Race Name:", "raceNameInput");
+
+            //Race Date
+            let raceDateLabel = document.createElement("label");
+            raceDateLabel.htmlFor = "raceDateInput";
+            raceDateLabel.innerHTML = "Race Date:"
+            form.appendChild(raceDateLabel);
+            form.appendChild(document.createElement("br"));
+
+            let raceDateInput = document.createElement("input");
+            raceDateInput.type = "date";
+            raceDateInput.id = "raceDateInput";
+            raceDateInput.name = "raceDateInput";
+            form.appendChild(raceDateInput);
+            form.appendChild(document.createElement("br"));
+
+        break;
+
         default:
           
     } 

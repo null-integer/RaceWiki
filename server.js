@@ -321,9 +321,10 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
     scoringSystem.push({"position":score.split(":")[0], "points":score.split(":")[1]});
   });
 
+  let calendar = [{"Round":1,"Date":"oct-10-2001","name":"Bahrain GP"}]
   let sections = [
     ["Table","Scoring System",scoringSystem, ["Position","Points"],["Text","Text"]],
-    ["Text","Calendar",""],
+    ["Table","Calendar",calendar,["Round","Date","Name"],["Text","Text","Text"]],
     ["Text","Results",""],
     ["Text","Driver's Standings",""],
     ["Text","Constructor's Standings",""],
@@ -344,8 +345,29 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
     articleTitle: articleTitle,
     sections:sections, 
     generalInfo:generalInfo,
-    pictureURL: ""
+    pictureURL: "",
+    relation: req.params["categoryName"]+"/"+req.params["seasonYear"]
   });
+});
+
+app.post('/season/:categoryName/:seasonYear/scoring',async (req, res) =>{
+  
+  let position = req.body.positionInput;
+  let points = req.body.pointsInput;
+
+  Database.newScoring(db,position,points, req.params["categoryName"],req.params["seasonYear"]);
+  res.redirect(req.get('referer'));
+});
+
+app.post('/season/:categoryName/:seasonYear/race',async (req, res) =>{
+  
+  let raceName = req.body.raceNameInput;
+  let raceDate = req.body.raceDateInput;
+
+  console.log(raceName);
+  console.log(raceDate);
+
+  res.redirect(req.get('referer'));
 });
 
 app.get('/race', async (req, res) =>{
