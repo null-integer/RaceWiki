@@ -105,7 +105,7 @@ app.get('/category/:categoryName', async (req, res) =>{
       ["Text", "Rules", categoryInfo.category_rules],
       ["Table","Championships",seasons,["Season Year"],["Link"],"/season/"+req.params["categoryName"]+"/"],
       ["Table","Teams",teams,[],["Link"], "/team/"+req.params["categoryName"]+"/"],
-      ["Table","Drivers","",[]],
+      ["Table","Drivers",[],["Driver Name"],["Text"]],
       ["Table","Flags", flags, ["Icon", "Name", "Meaning"], ["Image","Text","Text"]]
     ];
   
@@ -118,14 +118,14 @@ app.get('/category/:categoryName', async (req, res) =>{
     ];
   
     let articleTitle = categoryName;
-  
+
     res.render('article', {
       articleTitle: articleTitle,
       categories:categories,
       sections:sections, 
       generalInfo:generalInfo,
       pictureURL: categoryInfo.category_picture,
-      relation: req.params['categoryName'].replace(/_/g, " ")
+      relation: req.params['categoryName']
     });
 
   }
@@ -136,7 +136,7 @@ app.get('/category/:categoryName', async (req, res) =>{
 
 app.post('/category/:categoryName/season',async (req, res) =>{
   let year = req.body.seasonYearinput;
-  let scoring = req.body.scoringInput.split("\r\n").join(",");
+  let scoring = req.body.seasonScoringinput.split("\r\n").join(",");
 
   Database.newSeason(db, req.params["categoryName"], year, scoring);
   res.redirect(req.get('referer'));
@@ -321,11 +321,15 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
     scoringSystem.push({"position":score.split(":")[0], "points":score.split(":")[1]});
   });
 
-  let calendar = [{"Round":1,"Date":"oct-10-2001","name":"Bahrain GP"}]
+  let calendar = await Database.findCalendar(db,categoryName, req.params["seasonYear"]);
+  calendarArray = [];
+  for(let round = 0; round < calendar.length; round+=1){
+    calendarArray.push({"Round":round + 1, "Date":calendar[round].race_date, "Name":calendar[round].race_name});
+  }
+
   let sections = [
     ["Table","Scoring System",scoringSystem, ["Position","Points"],["Text","Text"]],
-    ["Table","Calendar",calendar,["Round","Date","Name"],["Text","Text","Text"]],
-    ["Text","Results",""],
+    ["Table","Calendar",calendarArray,["Round","Date","Name"],["Text","Text","Link"],"/race/"+req.params["categoryName"]+"/"+req.params["seasonYear"]+"/"],
     ["Text","Driver's Standings",""],
     ["Text","Constructor's Standings",""],
   ];
@@ -338,7 +342,7 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
     ["Constructor's Champion",""],
   ];
 
-  let articleTitle = req.params["seasonYear"]+ " "+req.params["categoryName"]+" Season";
+  let articleTitle = req.params["seasonYear"]+ " "+categoryName+" Season";
 
   res.render('article', {
     categories:categories,
@@ -364,42 +368,44 @@ app.post('/season/:categoryName/:seasonYear/race',async (req, res) =>{
   let raceName = req.body.raceNameInput;
   let raceDate = req.body.raceDateInput;
 
-  console.log(raceName);
-  console.log(raceDate);
+  Database.newRaceWeekend(db, raceName, raceDate, req.params["categoryName"], req.params["seasonYear"]);
 
   res.redirect(req.get('referer'));
 });
 
-app.get('/race', async (req, res) =>{
+app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
 
   let categories = await Database.findAllCategories(db);
   categories = categories.map(x => x.category_name);
 
   let sections = [
-    "Practice Sessions",
-    "Qualifying Sessions",
-    "Race Sessions",
-    "Pit Stops",
-    "Incidents",
+    ["Text", "Schedule",""],
+    ["Table","Practice Results",[],["Position","Driver","Lap Time"],["Text","Text","Text"]],
+    ["Table","Qualifying Results",[],["Position","Driver","Time"],["Text","Text","Text"]],
+    ["Table","Race Results",[],["Position","Driver","Points"],["Text","Text","Text","Text"]],
+    ["Table","Pit Stops",[],["Driver","Lap","Pit Time","Total Time","Description"],["Text","Text","Text","Text","Text"]],
+    ["Table","Incidents",[],["Drivers Involved","Time","Lap","Description"],["Text","Text","Text","Text"]],
   ];
 
   let generalInfo = [
-    "Season",
-    "Race Date",
-    "Laps",
-    "Race Length",
-    "Win",
-    "Pole Position",
-    "Fastest Lap",
+    ["Season",""],
+    ["Race Date",""],
+    ["Laps",""],
+    ["Race Length",""],
+    ["Win",""],
+    ["Pole Position",""],
+    ["Fastest Lap",""],
   ];
 
-  let articleTitle = "Category Name";
+  let articleTitle = req.params["raceName"].replace(/_/g, " ");
 
   res.render('article', {
     categories:categories,
     articleTitle: articleTitle,
     sections:sections, 
-    generalInfo:generalInfo
+    generalInfo:generalInfo,
+    pictureURL: "",
+    relation: req.params["raceName"]
   });
 });
 
