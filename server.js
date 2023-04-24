@@ -378,8 +378,11 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
   let categories = await Database.findAllCategories(db);
   categories = categories.map(x => x.category_name);
 
+  let schedule = await Database.findSchedule(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
+
   let sections = [
-    ["Text", "Schedule",""],
+    ["Table", "Schedule",schedule,["Session","Date","Time","Weather"],["Text","Text","Text","Text"]],
+    ["Table", "Circuit",[],[],["Link"],"www.google.com"],
     ["Table","Practice Results",[],["Position","Driver","Lap Time"],["Text","Text","Text"]],
     ["Table","Qualifying Results",[],["Position","Driver","Time"],["Text","Text","Text"]],
     ["Table","Race Results",[],["Position","Driver","Points"],["Text","Text","Text","Text"]],
@@ -389,6 +392,7 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
 
   let generalInfo = [
     ["Season",""],
+    ["Circuit",""],
     ["Race Date",""],
     ["Laps",""],
     ["Race Length",""],
@@ -405,8 +409,21 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
     sections:sections, 
     generalInfo:generalInfo,
     pictureURL: "",
-    relation: req.params["raceName"]
+    relation: req.params["categoryName"] + "/"+req.params["seasonYear"]+"/"+req.params["raceName"]
   });
+});
+
+app.post('/race/:categoryName/:seasonYear/:raceName/schedule',async (req, res) =>{
+  
+  let sessionType = req.body.sessionTypeInput;
+  let sessionTime = req.body.sessionTimeInput;
+  let sessionDate = req.body.sessionDateInput;
+  let sessionWeather = req.body.sessionWeatherInput;
+
+  Database.newSession(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],sessionType,sessionTime,sessionDate,sessionWeather);
+  
+  
+  res.redirect(req.get('referer'));
 });
 
 //Start the server

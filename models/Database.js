@@ -76,6 +76,67 @@ class Databse{
       let result = await db.run(`INSERT INTO raceWeekend (category_ID, race_date, race_name, practiceSession_ID, qualifyingSession_ID, race_ID, circuit_ID) VALUES ((SELECT category_ID FROM category WHERE category_name = ?), ?, ?, 0, 0, 0, 0)`,[categoryName,raceDate,raceName]);
       await db.run(`INSERT INTO raceInSeason (season_ID, raceWeekend_ID, category_ID) VALUES ((SELECT season_ID FROM SEASON WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)),?,(SELECT category_ID FROM category WHERE category_name = ?))`,[seasonYear,categoryName,result.lastID,categoryName]);
     }
+    static async newSession(db, categoryName,seasonYear,raceName,sessionType,sessionTime,sessionDate,sessionWeather){
+      if(sessionType == "Practice"){
+        let result = await db.run(`INSERT INTO practiceSession (practiceSession_date, practiceSession_time, result_ID, practiceSession_weather) VALUES (?,?,0,?)`,[sessionDate,sessionTime,sessionWeather]);
+
+        let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                          (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+        let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
+        
+        raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+        raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+        let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+        await db.run(`UPDATE raceWeekend SET practiceSession_ID = ? WHERE raceWeekend_ID = ?`,[result.lastID,intersection[0]]);
+      }else if(sessionType == "Qualifying"){
+        let result = await db.run(`INSERT INTO qualifyingSession (qualifyingSession_date, qualifyingSession_time, result_ID, qualifyingSession_weather) VALUES (?,?,0,?)`,[sessionDate,sessionTime,sessionWeather]);
+        let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                          (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+        let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
+        
+        raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+        raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+        let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+        await db.run(`UPDATE raceWeekend SET qualifyingSession_ID = ? WHERE raceWeekend_ID = ?`,[result.lastID,intersection[0]]);
+      }else{
+        let result = await db.run(`INSERT INTO race (race_date, race_time, result_ID, race_weather,race_duration,race_laps,race_fastest_lap, race_fastest_lap_driver_ID) VALUES (?,?,0,?,0,0,0,0)`,[sessionDate,sessionTime,sessionWeather]);
+        let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                          (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+        let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
+        
+        raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+        raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+        let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+        await db.run(`UPDATE raceWeekend SET race_ID = ? WHERE raceWeekend_ID = ?`,[result.lastID,intersection[0]]);
+      }
+    }
+
+    static async findSchedule(db,categoryName,seasonYear,raceName){
+      let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                        (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+      let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
+      
+      raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+      raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+      let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+      let result = await db.get(`SELECT practiceSession_ID, qualifyingSession_ID, race_ID FROM raceWeekend WHERE raceWeekend_ID = ?`,[intersection[0]]);
+
+      let practice = await db.get(`SELECT practiceSession_date, practiceSession_time, practiceSession_weather FROM practiceSession WHERE practiceSession_ID = ?`,[result.practiceSession_ID]);
+      let qualifying = await db.get(`SELECT qualifyingSession_date, qualifyingSession_time, qualifyingSession_weather FROM qualifyingSession WHERE qualifyingSession_ID = ?`,[result.qualifyingSession_ID]);
+      let race = await db.get(`SELECT race_date, race_time, race_weather FROM race WHERE race_ID = ?`,[result.race_ID]);
+
+      practice = {...{'sessionType':"Practice"},...practice};
+      qualifying = {...{'sessionType':"Qualifying"},...qualifying};
+      race = {...{'sessionType':"Race"},...race};
+            
+      let schedule = [practice,qualifying,race];
+
+      return schedule;
+    }
 
 
 }

@@ -131,6 +131,66 @@ function populateForm(buttonID,relation){
 
         break;
 
+        case "ScheduleButton":
+
+            //Form Title 
+            formTitle.innerHTML = "New Scheduled Session";
+            form.appendChild(formTitle);
+            form.action = "/race/"+relation+"/schedule";
+            
+            //Session Type
+            let sessionTypeLabel = document.createElement("label");
+            sessionTypeLabel.htmlFor = "sessionTypeInput";
+            sessionTypeLabel.innerHTML = "Session Type:";
+            form.appendChild(sessionTypeLabel);
+            form.appendChild(document.createElement("br"));
+
+            let sessionTypeInput = document.createElement("select");
+            sessionTypeInput.name = "sessionTypeInput";
+            sessionTypeInput.id = "sessionTypeInput";
+            let options = ["Practice","Qualifying","Race"];
+            options.forEach(option =>{
+                let optionElement = document.createElement("option");
+                optionElement.value = option;
+                optionElement.innerHTML = option;
+                sessionTypeInput.appendChild(optionElement);
+            });
+            form.appendChild(sessionTypeInput);
+            form.appendChild(document.createElement("br"));
+
+            //Session Date
+            let sessionDateLabel = document.createElement("label");
+            sessionDateLabel.htmlFor = "sessionDateInput";
+            sessionDateLabel.innerHTML = "Session Date:"
+            form.appendChild(sessionDateLabel);
+            form.appendChild(document.createElement("br"));
+
+            let sessionDateInput = document.createElement("input");
+            sessionDateInput.type = "date";
+            sessionDateInput.id = "sessionDateInput";
+            sessionDateInput.name = "sessionDateInput";
+            form.appendChild(sessionDateInput);
+            form.appendChild(document.createElement("br"));
+
+            //Session Time
+            let sessionTimeLabel = document.createElement("label");
+            sessionTimeLabel.htmlFor = "sessionTimeInput";
+            sessionTimeLabel.innerHTML = "Session Time:"
+            form.appendChild(sessionTimeLabel);
+            form.appendChild(document.createElement("br"));
+
+            let sessionTimeInput = document.createElement("input");
+            sessionTimeInput.type = "time";
+            sessionTimeInput.id = "sessionTimeInput";
+            sessionTimeInput.name = "sessionTimeInput";
+            form.appendChild(sessionTimeInput);
+            form.appendChild(document.createElement("br"));
+
+            //Session Weather
+            addLabelAndTextArea(form,"Session Weather:","sessionWeatherInput",10,"");
+
+        break;
+
         default:
           
     } 
