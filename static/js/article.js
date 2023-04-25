@@ -191,6 +191,33 @@ function populateForm(buttonID,relation){
 
         break;
 
+        case "CircuitButton":
+
+            //Form Title 
+            formTitle.innerHTML = "Set Circuit";
+            form.appendChild(formTitle);
+            form.action = "/race/"+relation+"/circuit";
+
+            //Circuit Name
+            addLabelAndText(form,"Circuit Name","circuitNameInput");
+
+        break;
+
+        case "TurnsButton":
+            
+            //Form Title 
+            formTitle.innerHTML = "New Turn";
+            form.appendChild(formTitle);
+            form.action = relation+"turn";
+
+            //Turn Number
+            addLabelAndText(form,"Turn Number","turnNumberInput");
+
+            //Turn Name
+            addLabelAndText(form,"Turn Name","turnNameInput");
+
+        break;
+
         default:
           
     } 

@@ -201,30 +201,32 @@ app.get('/driver', async (req, res) =>{
   });
 });
 
-app.get('/circuit', async (req, res) =>{
+app.get('/circuit/:circuitName', async (req, res) =>{
 
   let categories = await Database.findAllCategories(db);
   categories = categories.map(x => x.category_name);
 
   let sections = [
-    "Turns"
+    ["Table","Turns",[], ["Turn Number","Turn Name"],["Text","Text"]],
   ];
 
   let generalInfo = [
-    "Country",
-    "City",
-    "Length",
-    "Turns",
-    "Lap Record"
+    ["Country",""],
+    ["City",""],
+    ["Length",""],
+    ["Turns",""],
+    ["Lap Record",""]
   ];
 
-  let articleTitle = "Category Name";
+  let articleTitle = req.params["circuitName"].replace(/_/g, " ");
 
   res.render('article', {
     categories:categories,
     articleTitle: articleTitle,
     sections:sections, 
-    generalInfo:generalInfo
+    generalInfo:generalInfo,
+    relation: "/circuit/",
+    pictureURL: ""
   });
 });
 
@@ -379,10 +381,14 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
   categories = categories.map(x => x.category_name);
 
   let schedule = await Database.findSchedule(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
+  let circuit = await Database.findCircuit(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
+  if(!circuit){
+    circuit = {"circuit_name":""};
+  }
 
   let sections = [
     ["Table", "Schedule",schedule,["Session","Date","Time","Weather"],["Text","Text","Text","Text"]],
-    ["Table", "Circuit",[],[],["Link"],"www.google.com"],
+    ["Table", "Circuit",[{"name":circuit.circuit_name}],[],["Link"],"/circuit/"],
     ["Table","Practice Results",[],["Position","Driver","Lap Time"],["Text","Text","Text"]],
     ["Table","Qualifying Results",[],["Position","Driver","Time"],["Text","Text","Text"]],
     ["Table","Race Results",[],["Position","Driver","Points"],["Text","Text","Text","Text"]],
@@ -391,9 +397,8 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
   ];
 
   let generalInfo = [
-    ["Season",""],
-    ["Circuit",""],
-    ["Race Date",""],
+    ["Season",req.params["seasonYear"]],
+    ["Circuit",circuit.circuit_name],
     ["Laps",""],
     ["Race Length",""],
     ["Win",""],
@@ -422,6 +427,15 @@ app.post('/race/:categoryName/:seasonYear/:raceName/schedule',async (req, res) =
 
   Database.newSession(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],sessionType,sessionTime,sessionDate,sessionWeather);
   
+  
+  res.redirect(req.get('referer'));
+});
+
+app.post('/race/:categoryName/:seasonYear/:raceName/circuit',async (req, res) =>{
+  
+  let circuitName = req.body.circuitNameInput;
+
+  Database.setCircuit(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],circuitName);
   
   res.redirect(req.get('referer'));
 });

@@ -87,8 +87,17 @@ class Databse{
         raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
         raceIDs = raceIDs.map(x => x.raceWeekend_ID);
         let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+        
+        let newSessionString = await db.get(`SELECT practiceSession_ID FROM raceWeekend WHERE raceWeekend_ID = ?`,[intersection[0]]);
 
-        await db.run(`UPDATE raceWeekend SET practiceSession_ID = ? WHERE raceWeekend_ID = ?`,[result.lastID,intersection[0]]);
+        if(newSessionString.practiceSession_ID == "0"){
+          newSessionString = result.lastID + "";
+        }else{
+          newSessionString = newSessionString.practiceSession_ID+","+result.lastID;
+        }
+
+        await db.run(`UPDATE raceWeekend SET practiceSession_ID = ? WHERE raceWeekend_ID = ?`,[newSessionString,intersection[0]]);
+
       }else if(sessionType == "Qualifying"){
         let result = await db.run(`INSERT INTO qualifyingSession (qualifyingSession_date, qualifyingSession_time, result_ID, qualifyingSession_weather) VALUES (?,?,0,?)`,[sessionDate,sessionTime,sessionWeather]);
         let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
@@ -99,7 +108,15 @@ class Databse{
         raceIDs = raceIDs.map(x => x.raceWeekend_ID);
         let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
 
-        await db.run(`UPDATE raceWeekend SET qualifyingSession_ID = ? WHERE raceWeekend_ID = ?`,[result.lastID,intersection[0]]);
+        let newSessionString = await db.get(`SELECT qualifyingSession_ID FROM raceWeekend WHERE raceWeekend_ID = ?`,[intersection[0]]);
+
+        if(newSessionString.qualifyingSession_ID == "0"){
+          newSessionString = result.lastID + "";
+        }else{
+          newSessionString = newSessionString.qualifyingSession_ID+","+result.lastID;
+        }
+
+        await db.run(`UPDATE raceWeekend SET qualifyingSession_ID = ? WHERE raceWeekend_ID = ?`,[newSessionString,intersection[0]]);
       }else{
         let result = await db.run(`INSERT INTO race (race_date, race_time, result_ID, race_weather,race_duration,race_laps,race_fastest_lap, race_fastest_lap_driver_ID) VALUES (?,?,0,?,0,0,0,0)`,[sessionDate,sessionTime,sessionWeather]);
         let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
@@ -110,7 +127,15 @@ class Databse{
         raceIDs = raceIDs.map(x => x.raceWeekend_ID);
         let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
 
-        await db.run(`UPDATE raceWeekend SET race_ID = ? WHERE raceWeekend_ID = ?`,[result.lastID,intersection[0]]);
+        let newSessionString = await db.get(`SELECT race_ID FROM raceWeekend WHERE raceWeekend_ID = ?`,[intersection[0]]);
+
+        if(newSessionString.race_ID == "0"){
+          newSessionString = result.lastID + "";
+        }else{
+          newSessionString = newSessionString.race_ID+","+result.lastID;
+        }
+
+        await db.run(`UPDATE raceWeekend SET race_ID = ? WHERE raceWeekend_ID = ?`,[newSessionString,intersection[0]]);
       }
     }
 
@@ -125,17 +150,54 @@ class Databse{
 
       let result = await db.get(`SELECT practiceSession_ID, qualifyingSession_ID, race_ID FROM raceWeekend WHERE raceWeekend_ID = ?`,[intersection[0]]);
 
-      let practice = await db.get(`SELECT practiceSession_date, practiceSession_time, practiceSession_weather FROM practiceSession WHERE practiceSession_ID = ?`,[result.practiceSession_ID]);
-      let qualifying = await db.get(`SELECT qualifyingSession_date, qualifyingSession_time, qualifyingSession_weather FROM qualifyingSession WHERE qualifyingSession_ID = ?`,[result.qualifyingSession_ID]);
-      let race = await db.get(`SELECT race_date, race_time, race_weather FROM race WHERE race_ID = ?`,[result.race_ID]);
+      let practice = await db.all(`SELECT practiceSession_date, practiceSession_time, practiceSession_weather FROM practiceSession WHERE ` + result.practiceSession_ID.split(",").map(x => "practiceSession_ID = ?").join(" OR "), result.practiceSession_ID.split(","));
+      
+      let qualifying = await db.all(`SELECT qualifyingSession_date, qualifyingSession_time, qualifyingSession_weather FROM qualifyingSession WHERE ` + result.qualifyingSession_ID.split(",").map(x => "qualifyingSession_ID = ?").join(" OR "),result.qualifyingSession_ID.split(","));
+      let race = await db.all(`SELECT race_date, race_time, race_weather FROM race WHERE ` + result.race_ID.split(",").map(x => "race_ID = ?").join(" OR "),result.race_ID.split(","));
 
-      practice = {...{'sessionType':"Practice"},...practice};
-      qualifying = {...{'sessionType':"Qualifying"},...qualifying};
-      race = {...{'sessionType':"Race"},...race};
-            
-      let schedule = [practice,qualifying,race];
+      practice = practice.map(x => function(){return {...{'sessionType':"Practice"},...x}; }() );
+      qualifying = qualifying.map(x => function(){return {...{'sessionType':"Qualifying"},...x}; }() );
+      race = race.map(x => function(){return {...{'sessionType':"Race"},...x}; }() );
+
+      let schedule = [].concat(practice,qualifying,race);
 
       return schedule;
+    }
+
+    static async setCircuit(db, categoryName,seasonYear,raceName,circuitName){
+      let circuit = await db.get(`SELECT circuit_ID FROM circuit WHERE circuit_name = ?`,[circuitName]);
+
+        let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                          (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+        let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
+        
+        raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+        raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+        let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+      //Circuit in DB
+      if(circuit){
+        await db.run(`UPDATE raceWeekend SET circuit_ID = ? WHERE raceWeekend_ID = ?`,[circuit.circuit_ID,intersection[0]]);
+
+      }else{
+        let result = await db.run(`INSERT INTO circuit (circuit_country,circuit_city, circuit_length,circuit_turns,circuit_picture,circuit_name) VALUES ("","","","","",?)`,[circuitName]);
+        await db.run(`UPDATE raceWeekend SET circuit_ID = ? WHERE raceWeekend_ID = ?`,[result.lastID,intersection[0]]);
+
+      }
+    }
+
+    static async findCircuit(db,categoryName,seasonYear,raceName){
+      let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                        (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+      let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
+      
+      raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+      raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+      let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+      let result = await db.get(`SELECT * FROM circuit WHERE circuit_ID = (SELECT circuit_ID FROM raceWeekend WHERE raceWeekend_ID = ?)`,[intersection[0]]);
+
+      return result;
     }
 
 
