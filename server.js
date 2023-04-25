@@ -206,8 +206,10 @@ app.get('/circuit/:circuitName', async (req, res) =>{
   let categories = await Database.findAllCategories(db);
   categories = categories.map(x => x.category_name);
 
+  let turns = await Database.getTurns(db,req.params["circuitName"]);
+
   let sections = [
-    ["Table","Turns",[], ["Turn Number","Turn Name"],["Text","Text"]],
+    ["Table","Turns",turns, ["Turn Number","Turn Name"],["Text","Text"]],
   ];
 
   let generalInfo = [
@@ -225,9 +227,19 @@ app.get('/circuit/:circuitName', async (req, res) =>{
     articleTitle: articleTitle,
     sections:sections, 
     generalInfo:generalInfo,
-    relation: "/circuit/",
+    relation: "/circuit/"+req.params["circuitName"]+"/",
     pictureURL: ""
   });
+});
+
+app.post('/circuit/:circuitName/turn',async (req, res) =>{
+  
+  let turnNumber = req.body.turnNumberInput;
+  let turnName = req.body.turnNameInput;
+
+  Database.newTurn(db,req.params["circuitName"],turnNumber,turnName);
+
+  res.redirect(req.get('referer'));
 });
 
 app.get('/team/:categoryName/:teamName', async (req, res) =>{
@@ -382,6 +394,7 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
 
   let schedule = await Database.findSchedule(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
   let circuit = await Database.findCircuit(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
+  let practiceResults = await Database.findPracticeResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
   if(!circuit){
     circuit = {"circuit_name":""};
   }
@@ -390,7 +403,7 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
     ["Table", "Schedule",schedule,["Session","Date","Time","Weather"],["Text","Text","Text","Text"]],
     ["Table", "Circuit",[{"name":circuit.circuit_name}],[],["Link"],"/circuit/"],
     ["Table","Practice Results",[],["Position","Driver","Lap Time"],["Text","Text","Text"]],
-    ["Table","Qualifying Results",[],["Position","Driver","Time"],["Text","Text","Text"]],
+    ["Table","Qualifying Results",[],["Position","Driver","Time","Points"],["Text","Text","Text","Text"]],
     ["Table","Race Results",[],["Position","Driver","Points"],["Text","Text","Text","Text"]],
     ["Table","Pit Stops",[],["Driver","Lap","Pit Time","Total Time","Description"],["Text","Text","Text","Text","Text"]],
     ["Table","Incidents",[],["Drivers Involved","Time","Lap","Description"],["Text","Text","Text","Text"]],
@@ -436,6 +449,16 @@ app.post('/race/:categoryName/:seasonYear/:raceName/circuit',async (req, res) =>
   let circuitName = req.body.circuitNameInput;
 
   Database.setCircuit(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],circuitName);
+  
+  res.redirect(req.get('referer'));
+});
+
+app.post('/race/:categoryName/:seasonYear/:raceName/PracticeResult',async (req, res) =>{
+  
+  let driverName = req.body.driverNameInput;
+  let driverLapTime = req.body.driverLapTimeInput;
+
+  Database.newPracticeResult(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverName,driverLapTime);
   
   res.redirect(req.get('referer'));
 });

@@ -200,6 +200,53 @@ class Databse{
       return result;
     }
 
+    static async newTurn(db,circuitName,turnNumber,turnName){
+      circuitName = circuitName.replace(/_/g, " ");
+      await db.run(`INSERT INTO turn (circuit_ID, turn_name, turn_number) VALUES ((SELECT circuit_ID FROM circuit WHERE circuit_name = ?),?,?)`,[circuitName, turnName, turnNumber]);
+    }
+
+    static async getTurns(db,circuitName){
+      circuitName = circuitName.replace(/_/g, " ");
+      let result = await db.all(`SELECT turn_number, turn_name FROM turn WHERE circuit_ID = (SELECT circuit_ID FROM circuit WHERE circuit_name = ?)`,[circuitName]);
+      return result;
+    }
+
+    static async newPracticeResult(db, categoryName,seasonYear,raceName,driverName,driverLapTime){
+
+      let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                        (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+      let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
+      
+      raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+      raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+      let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+      let driverID = await db.get(`SELECT driver_ID FROM driver WHERE driver_first_name = ? AND driver_last_name = ?`,driverName.split(" ").slice(0,2));
+      if(!driverID){
+        let driverID = await db.run(`INSERT INTO driver (driver_first_name, driver_last_name, driver_number, driver_DOB, driver_nationality, driver_penalty_points, driver_picture) 
+                                    VALUES (?,?,0,"","",0,"")`,driverName.split(" ").slice(0,2));
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time) VALUES (?,?,"Practice",0,0,"",?)`,[intersection[0],driverID.lastID, driverLapTime]);
+        
+      }else{
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time) VALUES (?,?,"Practice",0,0,"",?)`,[intersection[0],driverID.driver_ID,driverLapTime]);      
+      }
+
+    }
+    static async findPracticeResults(db,categoryName,seasonYear,raceName){
+      let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                        (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+      let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
+      
+      raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+      raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+      let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+      //JOIN BASED ON DRIVER ID
+      let result = await db.all(`SELECT result.driver_ID, result.lap_time FROM result RIGHT JOIN driver ON result.driver_ID=driver.driver_ID`,[]);
+      
+      console.log(result);
+    
+    }
 
 }
 

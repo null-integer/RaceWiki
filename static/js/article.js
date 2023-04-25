@@ -218,6 +218,21 @@ function populateForm(buttonID,relation){
 
         break;
 
+        case "Practice ResultsButton":
+
+            //Form Title 
+            formTitle.innerHTML = "New Practice Result";
+            form.appendChild(formTitle);
+            form.action = "/race/"+relation + "/PracticeResult";
+
+            //Driver Name
+            addLabelAndText(form,"Driver Name","driverNameInput");
+
+            addLabelAndTextArea(form,"Driver Lap Time","driverLapTimeInput",1,"00:00:00");
+
+
+        break;
+
         default:
           
     } 
