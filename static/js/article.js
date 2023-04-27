@@ -239,10 +239,10 @@ function populateForm(buttonID,relation){
             form.appendChild(formTitle);
             form.action = "/race/"+relation + "/PitStop";
 
-            addLabelAndText(form,"Driver Name","driverNameInput");
-            addLabelAndText(form,"Lap Number","lapNumberInput");
-            addLabelAndText(form,"Pit Time","pitTimeInput");
-            addLabelAndText(form,"Total Time","totalTimeInput");
+            addLabelAndText(form,"Driver Name:","driverNameInput");
+            addLabelAndText(form,"Lap Number:","lapNumberInput");
+            addLabelAndText(form,"Pit Time:","pitTimeInput");
+            addLabelAndText(form,"Total Time:","totalTimeInput");
 
             addLabelAndTextArea(form,"Pit Description","pitDescriptionInput",10,"");
             
@@ -253,6 +253,13 @@ function populateForm(buttonID,relation){
             formTitle.innerHTML = "New Vehicle";
             form.appendChild(formTitle);
             form.action = relation+"vehicle";
+            
+            addLabelAndText(form,"Engine:","vehicleEngineInput");
+            addLabelAndText(form,"Chassis Name:","vehicleChassisNameInput",);
+            addLabelAndText(form,"Season Year:","vehicleSeasonYearInput");
+            addLabelAndText(form, "Power (Horse Power):","vehiclePowerInput");
+            addLabelAndText(form, "Weight:","vehicleWeightInput");
+            addLabelAndText(form, "Picture URL:","vehiclePictureURLInput");
 
         break;
 

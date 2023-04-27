@@ -261,8 +261,23 @@ class Databse{
       return result;
     
     }
+
     static async findDriver(db, driverName){
       let result = await db.get(`SELECT * FROM driver WHERE driver_first_name = ? AND driver_last_name = ?`,driverName.split(" "));
+      return result;
+    }
+
+    static async newVehicle(db,categoryName,teamName,engine, chassis, seasonYear, power, weight, url){
+      categoryName = categoryName.replace(/_/g, " ");
+      teamName = teamName.replace(/_/g, " ");
+
+      await db.run(`INSERT INTO vehicle (team_ID, vehicle_engine, vehicle_chassis_name, vehicle_year, vehicle_power, vehicle_weight, vehicle_picture) VALUES 
+                    ((SELECT team_ID FROM team WHERE team_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)),
+                    ?,?,?,?,?,?)`,[teamName,categoryName,engine, chassis, seasonYear, power, weight, url]);
+    }
+
+    static async findVehicles(db, categoryName, teamName){
+      let result = await db.all(`SELECT vehicle_chassis_name FROM vehicle WHERE team_ID = (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[teamName,categoryName]);
       return result;
     }
 

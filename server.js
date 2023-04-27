@@ -252,13 +252,14 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
   let categories = await Database.findAllCategories(db);
   categories = categories.map(x => x.category_name);
 
-  let teamInfo = await Database.findTeamByCategory(db,req.params["categoryName"], req.params["teamName"].replace(/_/g," "));
+  let teamInfo = await Database.findTeamByCategory(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
+  let vehicles = await Database.findVehicles(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
   
   let sections = [
 
     ["Text","Constructor's Championships", ""],
     ["Text","Driver's Championships", ""],
-    ["Table","Vehicles", [],[],["Text"]],
+    ["Table","Vehicles", vehicles,[],["Link"],"/vehicle/"+req.params["categoryName"]+ "/"+req.params["teamName"]+"/"],
     ["Text","Drivers", ""],
     ["Text","Victories", ""],
     ["Text","Podiums", ""],
@@ -291,7 +292,21 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
   });
 });
 
-app.get('/vehicle', async (req, res) =>{
+app.post('/:categoryName/:teamName/vehicle',async (req, res) =>{
+  
+  let engine = req.body.vehicleEngineInput;
+  let chassis = req.body.vehicleChassisNameInput;
+  let seasonYear = req.body.vehicleSeasonYearInput;
+  let power = req.body.vehiclePowerInput;
+  let weight = req.body.vehicleWeightInput;
+  let url = req.body.vehiclePictureURLInput;
+
+  Database.newVehicle(db,req.params["categoryName"],req.params["teamName"],engine, chassis, seasonYear, power, weight, url);
+
+  res.redirect(req.get('referer'));
+});
+
+app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
 
   let categories = await Database.findAllCategories(db);
   categories = categories.map(x => x.category_name);
