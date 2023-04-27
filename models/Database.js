@@ -211,6 +211,12 @@ class Databse{
       return result;
     }
 
+    static async findCircuitInfo(db,circuitName){
+      circuitName = circuitName.replace(/_/g, " ");
+      let result = await db.get(`SELECT * FROM circuit WHERE circuit_name = ?`,[circuitName]);
+      return result;
+    }
+
     static async newPracticeResult(db, categoryName,seasonYear,raceName,driverName,driverLapTime){
 
       let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
@@ -232,6 +238,12 @@ class Databse{
       }
 
     }
+
+    static async newPitStop(db, categoryName,seasonYear,raceName,driverName,lapNumber,pitTime,totalTime){
+      
+
+    }
+
     static async findPracticeResults(db,categoryName,seasonYear,raceName){
       let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                         (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
@@ -241,11 +253,17 @@ class Databse{
       raceIDs = raceIDs.map(x => x.raceWeekend_ID);
       let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
 
-      //JOIN BASED ON DRIVER ID
-      let result = await db.all(`SELECT result.driver_ID, result.lap_time FROM result RIGHT JOIN driver ON result.driver_ID=driver.driver_ID`,[]);
+      let result = await db.all(`SELECT driver_first_name, driver_last_name,lap_time from (SELECT * FROM RESULT NATURAL JOIN driver) WHERE raceWeekend_ID = ?`,[intersection[0]]);
+
+      result.sort((a,b) => { return a.lap_time - b.lap_time});
+      result = result.map((x,index) => function(){return {"Position":index+1, "Driver":x.driver_first_name + " " + x.driver_last_name, "Lap Time": x.lap_time}}() );
       
-      console.log(result);
+      return result;
     
+    }
+    static async findDriver(db, driverName){
+      let result = await db.get(`SELECT * FROM driver WHERE driver_first_name = ? AND driver_last_name = ?`,driverName.split(" "));
+      return result;
     }
 
 }

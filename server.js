@@ -165,10 +165,13 @@ app.post('/category/:categoryName/flag',async (req, res) =>{
 });
 
 
-app.get('/driver', async (req, res) =>{
+app.get('/driver/:driverName', async (req, res) =>{
 
   let categories = await Database.findAllCategories(db);
   categories = categories.map(x => x.category_name);
+
+  let driverName = req.params["driverName"].replace(/_/g, " "); 
+  let driverInfo = await Database.findDriver(db, driverName);
 
   let sections = [
     ["Table","Teams","",[]],
@@ -179,25 +182,26 @@ app.get('/driver', async (req, res) =>{
   ];
 
   let generalInfo = [
-    ["Date of Birth",""],
-    ["Number",""],
-    ["Nationality",""],
+    ["Date of Birth",driverInfo.driver_DOB],
+    ["Number",driverInfo.driver_number],
+    ["Nationality",driverInfo.driver_nationality],
     ["Championships",""],
-    ["Penalty Points",""],
+    ["Penalty Points",driverInfo.driver_penalty_points],
     ["Wins",""],
     ["Podiums",""],
     ["Pole Positions",""],
     ["Fastests Laps",""],
   ];
 
-  let articleTitle = "Category Name";
+  let articleTitle = driverName;
 
   res.render('article', {
     categories:categories,
     articleTitle: articleTitle,
     sections:sections, 
     generalInfo:generalInfo,
-    pictureURL:""
+    pictureURL:driverInfo.driver_picture,
+    relation:"/"
   });
 });
 
@@ -206,6 +210,7 @@ app.get('/circuit/:circuitName', async (req, res) =>{
   let categories = await Database.findAllCategories(db);
   categories = categories.map(x => x.category_name);
 
+  let circuitInfo = await Database.findCircuitInfo(db,req.params["circuitName"]);
   let turns = await Database.getTurns(db,req.params["circuitName"]);
 
   let sections = [
@@ -213,10 +218,10 @@ app.get('/circuit/:circuitName', async (req, res) =>{
   ];
 
   let generalInfo = [
-    ["Country",""],
-    ["City",""],
-    ["Length",""],
-    ["Turns",""],
+    ["Country",circuitInfo.circuit_country],
+    ["City",circuitInfo.circuit_city],
+    ["Length",circuitInfo.circuit_length + " Km"],
+    ["Turns",turns.length],
     ["Lap Record",""]
   ];
 
@@ -228,7 +233,7 @@ app.get('/circuit/:circuitName', async (req, res) =>{
     sections:sections, 
     generalInfo:generalInfo,
     relation: "/circuit/"+req.params["circuitName"]+"/",
-    pictureURL: ""
+    pictureURL: circuitInfo.circuit_picture
   });
 });
 
@@ -253,8 +258,7 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
 
     ["Text","Constructor's Championships", ""],
     ["Text","Driver's Championships", ""],
-    ["Text","Chassis", ""],
-    ["Text","Engines", ""],
+    ["Table","Vehicles", [],[],["Text"]],
     ["Text","Drivers", ""],
     ["Text","Victories", ""],
     ["Text","Podiums", ""],
@@ -282,7 +286,8 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
     articleTitle: articleTitle,
     sections:sections, 
     generalInfo:generalInfo,
-    pictureURL: teamInfo.team_picture
+    pictureURL: teamInfo.team_picture,
+    relation: "/"+req.params["categoryName"]+ "/"+req.params["teamName"]+"/"
   });
 });
 
@@ -395,19 +400,33 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
   let schedule = await Database.findSchedule(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
   let circuit = await Database.findCircuit(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
   let practiceResults = await Database.findPracticeResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
+  let qualifyingResults = [];
+  let raceResults = [];
   if(!circuit){
     circuit = {"circuit_name":""};
   }
 
   let sections = [
-    ["Table", "Schedule",schedule,["Session","Date","Time","Weather"],["Text","Text","Text","Text"]],
+    ["Table", "Schedule",schedule,["Session","Date","Time","Weather","Points"],["Text","Text","Text","Text","Text"]],
     ["Table", "Circuit",[{"name":circuit.circuit_name}],[],["Link"],"/circuit/"],
-    ["Table","Practice Results",[],["Position","Driver","Lap Time"],["Text","Text","Text"]],
-    ["Table","Qualifying Results",[],["Position","Driver","Time","Points"],["Text","Text","Text","Text"]],
-    ["Table","Race Results",[],["Position","Driver","Points"],["Text","Text","Text","Text"]],
-    ["Table","Pit Stops",[],["Driver","Lap","Pit Time","Total Time","Description"],["Text","Text","Text","Text","Text"]],
-    ["Table","Incidents",[],["Drivers Involved","Time","Lap","Description"],["Text","Text","Text","Text"]],
+    // ["Table","Practice Results",practiceResults,["Position","Driver","Lap Time"],["Text","Link","Text"],"/driver/"],
+    // ["Table","Qualifying Results",[],["Position","Driver","Time","Points"],["Text","Text","Text","Text"]],
+    // ["Table","Race Results",[],["Position","Driver","Points"],["Text","Text","Text","Text"]],
+    // ["Table","Pit Stops",[],["Driver","Lap","Pit Time","Total Time","Description"],["Text","Text","Text","Text","Text"]],
+    // ["Table","Incidents",[],["Drivers Involved","Time","Lap","Description"],["Text","Text","Text","Text"]],
   ];
+
+  let index = {"Practice":1, "Qualifying":1, "Race":1};
+  let table = {"Practice":practiceResults, "Qualifying":qualifyingResults, "Race":raceResults};
+  schedule.forEach(x=>{
+    if(schedule.filter(y => y.sessionType == x.sessionType).length > 1){
+      sections.push(["Table",x.sessionType + " "+index[x.sessionType] + " Results",table[x.sessionType],["Position","Driver","Lap Time","Points"],["Text","Link","Text","Text"],"/driver/"]);
+      index[x.sessionType] += 1;
+    }
+  });
+
+  sections.push(["Table","Pit Stops",[],["Driver","Lap","Pit Time","Total Time","Description"],["Text","Text","Text","Text","Text"]]);
+  sections.push(["Table","Incidents",[],["Drivers Involved","Time","Lap","Description"],["Text","Text","Text","Text"]]);
 
   let generalInfo = [
     ["Season",req.params["seasonYear"]],
@@ -427,7 +446,7 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
     sections:sections, 
     generalInfo:generalInfo,
     pictureURL: "",
-    relation: req.params["categoryName"] + "/"+req.params["seasonYear"]+"/"+req.params["raceName"]
+    relation: req.params["categoryName"] + "/"+req.params["seasonYear"]+"/"+req.params["raceName"],
   });
 });
 
@@ -460,6 +479,18 @@ app.post('/race/:categoryName/:seasonYear/:raceName/PracticeResult',async (req, 
 
   Database.newPracticeResult(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverName,driverLapTime);
   
+  res.redirect(req.get('referer'));
+});
+
+app.post('/race/:categoryName/:seasonYear/:raceName/PitStop',async (req, res) =>{
+  
+  let driverName = req.body.driverNameInput;
+  let lapNumber = req.body.lapNumberInput;
+  let pitTime = req.body.pitTimeInput;
+  let totalTime = req.body.totalTimeInput;
+  
+  Database.newPitStop(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverName,lapNumber,pitTime,totalTime);
+
   res.redirect(req.get('referer'));
 });
 

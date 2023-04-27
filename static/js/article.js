@@ -233,6 +233,29 @@ function populateForm(buttonID,relation){
 
         break;
 
+        case "Pit StopsButton":
+            //Form Title 
+            formTitle.innerHTML = "New Pit Stop";
+            form.appendChild(formTitle);
+            form.action = "/race/"+relation + "/PitStop";
+
+            addLabelAndText(form,"Driver Name","driverNameInput");
+            addLabelAndText(form,"Lap Number","lapNumberInput");
+            addLabelAndText(form,"Pit Time","pitTimeInput");
+            addLabelAndText(form,"Total Time","totalTimeInput");
+
+            addLabelAndTextArea(form,"Pit Description","pitDescriptionInput",10,"");
+            
+
+        break;
+
+        case "VehiclesButton":
+            formTitle.innerHTML = "New Vehicle";
+            form.appendChild(formTitle);
+            form.action = relation+"vehicle";
+
+        break;
+
         default:
           
     } 
