@@ -22,15 +22,17 @@ let db;
 		filename: 'RaceWikiDB.db',
 		driver: sqlite3.Database
 	});
+  updateCategories(db);
 })();
 
-//Routes
+let categories = [];
+async function updateCategories(db){
+  categories = await Database.findAllCategories(db);
+  categories = categories.map(x => x.category_name);
+}
 
 //Main Homepage
 app.get('/', async (req, res) => {
-
-  let categories = await Database.findAllCategories(db);
-  categories = categories.map(x => x.category_name);
   
 	res.render('homepage', {
     categories:categories,
@@ -68,8 +70,6 @@ app.post('/signin',(req,res)=>{
 
 //Control Panel 
 app.get('/controlpanel', async (req, res) => {
-  let categories = await Database.findAllCategories(db);
-  categories = categories.map(x => x.category_name);
 	res.render('controlPanel',{
     categories:categories,
   });
@@ -77,15 +77,16 @@ app.get('/controlpanel', async (req, res) => {
 
 //New Category Page
 app.get('/newcategory', async (req, res) => {
-
   res.render('newCategory');
+});
+
+app.post('/newcategory', async (req, res) => {
+  console.log(req.body);
+  res.redirect("/");
 });
 
 //Articles
 app.get('/category/:categoryName', async (req, res) =>{
-
-  let categories = await Database.findAllCategories(db);
-  categories = categories.map(x => x.category_name);
 
   categoryName = req.params['categoryName'].replace(/_/g, " ");
 
@@ -130,7 +131,7 @@ app.get('/category/:categoryName', async (req, res) =>{
 
   }
   else{
-    res.sendStatus(404);
+    res.render("notFound");
   }  
 });
 
@@ -166,9 +167,6 @@ app.post('/category/:categoryName/flag',async (req, res) =>{
 
 
 app.get('/driver/:driverName', async (req, res) =>{
-
-  let categories = await Database.findAllCategories(db);
-  categories = categories.map(x => x.category_name);
 
   let driverName = req.params["driverName"].replace(/_/g, " "); 
   let driverInfo = await Database.findDriver(db, driverName);
@@ -206,9 +204,6 @@ app.get('/driver/:driverName', async (req, res) =>{
 });
 
 app.get('/circuit/:circuitName', async (req, res) =>{
-
-  let categories = await Database.findAllCategories(db);
-  categories = categories.map(x => x.category_name);
 
   let circuitInfo = await Database.findCircuitInfo(db,req.params["circuitName"]);
   let turns = await Database.getTurns(db,req.params["circuitName"]);
@@ -248,9 +243,6 @@ app.post('/circuit/:circuitName/turn',async (req, res) =>{
 });
 
 app.get('/team/:categoryName/:teamName', async (req, res) =>{
-
-  let categories = await Database.findAllCategories(db);
-  categories = categories.map(x => x.category_name);
 
   let teamInfo = await Database.findTeamByCategory(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
   let vehicles = await Database.findVehicles(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
@@ -308,43 +300,40 @@ app.post('/:categoryName/:teamName/vehicle',async (req, res) =>{
 
 app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
 
-  let categories = await Database.findAllCategories(db);
-  categories = categories.map(x => x.category_name);
+  let vehicleInfo = await Database.findVehicle(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "), req.params["vehicleName"].replace(/_/g," "));
 
   let sections = [
-    "Drivers",
-    "Wins",
-    "Podiums",
-    "Pole Positions",
-    "Full Results"
+    ["Text","Drivers",""],
+    ["Text","Wins",""],
+    ["Text","Podiums",""],
+    ["Text","Pole Positions",""],
+    ["Text","Full Results",""]
   ];
 
   let generalInfo = [
-    "Team",
-    "Engine",
-    "Power",
-    "Weight",
-    "Races",
-    "Wins",
-    "Podiums",
-    "Pole Positions",
-    "Fastests Laps"
+    ["Team",req.params["teamName"].replace(/_/g," ")],
+    ["Engine",vehicleInfo.vehicle_engine],
+    ["Power", vehicleInfo.vehicle_power + " HP"],
+    ["Weight",vehicleInfo.vehicle_weight + " Kg"],
+    ["Races",""],
+    ["Wins",""],
+    ["Podiums",""],
+    ["Pole Positions",""],
+    ["Fastests Laps",""]
   ];
 
-  let articleTitle = "Category Name";
+  let articleTitle = vehicleInfo.vehicle_chassis_name;
 
   res.render('article', {
     categories:categories,
     articleTitle: articleTitle,
     sections:sections, 
-    generalInfo:generalInfo
+    generalInfo:generalInfo,
+    pictureURL: vehicleInfo.vehicle_picture
   });
 });
 
 app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
-
-  let categories = await Database.findAllCategories(db);
-  categories = categories.map(x => x.category_name);
 
   categoryName = req.params['categoryName'].replace(/_/g, " ");
   let seasonInfo = await Database.findSeasonByCategoryandYear(db, categoryName, req.params["seasonYear"]);
@@ -409,9 +398,6 @@ app.post('/season/:categoryName/:seasonYear/race',async (req, res) =>{
 
 app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
 
-  let categories = await Database.findAllCategories(db);
-  categories = categories.map(x => x.category_name);
-
   let schedule = await Database.findSchedule(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
   let circuit = await Database.findCircuit(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
   let practiceResults = await Database.findPracticeResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
@@ -447,7 +433,6 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
     ["Season",req.params["seasonYear"]],
     ["Circuit",circuit.circuit_name],
     ["Laps",""],
-    ["Race Length",""],
     ["Win",""],
     ["Pole Position",""],
     ["Fastest Lap",""],

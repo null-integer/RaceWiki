@@ -281,6 +281,11 @@ class Databse{
       return result;
     }
 
+    static async findVehicle(db,categoryName, teamName, vehicleName){
+      let result = await db.get(`SELECT * FROM vehicle WHERE vehicle_chassis_name = ? AND team_ID = (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[vehicleName, teamName, categoryName ]);
+      return result;
+    }
+
 }
 
 module.exports = Databse;
