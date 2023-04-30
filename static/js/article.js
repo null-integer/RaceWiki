@@ -38,6 +38,11 @@ function populateForm(buttonID,relation){
     form.method = "POST";
     let formTitle = document.createElement("h3");
 
+    if(buttonID.includes("Practice") || buttonID.includes("Qualifying") || buttonID.includes("Race")){
+        buttonID = buttonID.replace(/ \d+/g,"");
+        console.log(buttonID);
+    }
+
     switch(buttonID) {
         case "ChampionshipsButton":
 
@@ -158,6 +163,26 @@ function populateForm(buttonID,relation){
             form.appendChild(sessionTypeInput);
             form.appendChild(document.createElement("br"));
 
+            //Points
+            let pointsLabel = document.createElement("label");
+            pointsLabel.htmlFor = "pointsInput";
+            pointsLabel.innerHTML = "Points Awarded:";
+            form.appendChild(pointsLabel);
+            form.appendChild(document.createElement("br"));
+
+            let pointsInput = document.createElement("select");
+            pointsInput.name = "pointsInput";
+            pointsInput.id = "pointsInput";
+            options = ["Yes","No"];
+            options.forEach(option =>{
+                let optionElement = document.createElement("option");
+                optionElement.value = option;
+                optionElement.innerHTML = option;
+                pointsInput.appendChild(optionElement);
+            });
+            form.appendChild(pointsInput);
+            form.appendChild(document.createElement("br"));
+
             //Session Date
             let sessionDateLabel = document.createElement("label");
             sessionDateLabel.htmlFor = "sessionDateInput";
@@ -224,6 +249,21 @@ function populateForm(buttonID,relation){
             formTitle.innerHTML = "New Practice Result";
             form.appendChild(formTitle);
             form.action = "/race/"+relation + "/PracticeResult";
+
+            //Driver Name
+            addLabelAndText(form,"Driver Name","driverNameInput");
+
+            addLabelAndTextArea(form,"Driver Lap Time","driverLapTimeInput",1,"00:00:00");
+
+
+        break;
+
+        case "Qualifying ResultsButton":
+
+            //Form Title 
+            formTitle.innerHTML = "New Qualifying Result";
+            form.appendChild(formTitle);
+            form.action = "/race/"+relation + "/QualifyingResult";
 
             //Driver Name
             addLabelAndText(form,"Driver Name","driverNameInput");
