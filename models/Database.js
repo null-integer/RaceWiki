@@ -48,7 +48,9 @@ class Databse{
       return result;
     }
     static async findEntries(db, categoryName, seasonYear){
-      return [];
+      let result = await db.all(`SELECT team_name, driver_first_name, driver_last_name, vehicle_chassis_name FROM (SELECT * FROM (SELECT * FROM (SELECT * FROM drove WHERE season_ID = (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))) NATURAL JOIN driver) NATURAL JOIN team) NATURAL JOIN vehicle`,[seasonYear, categoryName]);
+      result = result.map(x => function(){return{"team":x.team_name, "driver":x.driver_first_name + " " + x.driver_last_name, "vehicle":x.vehicle_chassis_name}}());
+      return result;
     }
     static async newSeason(db, categoryName, year, scoring){
       categoryName = categoryName.replace(/_/g, " ");
@@ -307,8 +309,30 @@ class Databse{
       }
 
     }
-    static async newPitStop(db, categoryName,seasonYear,raceName,driverName,lapNumber,pitTime,totalTime){
+    static async newPitStop(db, categoryName,seasonYear,raceName,driverName,lapNumber,pitTime,totalTime,pitDescription){
+
+      let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                        (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+      let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
       
+      raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+      raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+      let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+      let driver = await db.get(`SELECT driver_ID FROM driver WHERE driver_first_name = ? AND driver_last_name = ?`,driverName.split(" "));
+      if(!driver){
+        let driver = await db.run(`INSERT INTO driver (driver_first_name, driver_last_name,driver_number,driver_DOB,driver_nationality, driver_penalty_points, driver_picture) VALUES 
+        (?,?,0,"","",0,"")`,driverName.split(" "));
+
+        await db.run(`INSERT INTO pitstop (raceWeekend_ID,driver_ID, pitstop_time, pitstop_lap, pitstop_total_time,pitstop_description) 
+        VALUES (?, ?,?,?,?,?)`,[intersection[0], driver.lastID, pitTime,lapNumber,totalTime,pitDescription]);
+
+      }else{
+        await db.run(`INSERT INTO pitstop (raceWeekend_ID,driver_ID, pitstop_time, pitstop_lap, pitstop_total_time,pitstop_description) 
+        VALUES (?, ?,?,?,?,?)`,[intersection[0], driver.driver_ID, pitTime,lapNumber,totalTime,pitDescription]);
+      }
+
+   
 
     }
 
@@ -352,6 +376,23 @@ class Databse{
 
       let result = await db.all(`SELECT position, driver_first_name, driver_last_name,lap_time, session_number from (SELECT * FROM result NATURAL JOIN driver) WHERE raceWeekend_ID = ? AND session_type = "Race"`,[intersection[0]]);
 
+      return result;
+    
+    }
+
+    static async findPitStops(db,categoryName,seasonYear,raceName){
+      let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                        (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+      let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
+      
+      raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+      raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+      let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+      let result = await db.all(`SELECT driver_first_name, driver_last_name, pitstop_lap, pitstop_time, pitstop_total_time, pitstop_description FROM (SELECT * FROM (SELECT * FROM pitstop WHERE raceWeekend_ID = ?) NATURAL JOIN driver)`,[intersection[0]]);
+
+      result = result.map(x => function(){return {"name":x.driver_first_name + " " + x.driver_last_name, "Lap": x.pitstop_lap, "Pit Time": x.pitstop_time, "Total":x.pitstop_total_time, "Desc":x.pitstop_description}}())
+      result.sort((a,b) => parseInt(a["Lap"]) - parseInt(b["Lap"]))
       return result;
     
     }
