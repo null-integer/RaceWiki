@@ -317,6 +317,18 @@ function populateForm(buttonID,relation){
             addLabelAndText(form, "Picture URL:","vehiclePictureURLInput");
 
         break;
+        
+        case "EntriesButton":
+            formTitle.innerHTML = "New Season Entry";
+            form.appendChild(formTitle);
+            form.action = "/season/"+relation+"/entry";
+
+            addLabelAndText(form,"Team:","teamInput");
+            addLabelAndText(form,"Driver:","driverInput");
+            addLabelAndText(form,"Team Vehicle:","vehicleInput");
+
+
+        break;
 
         default:
           

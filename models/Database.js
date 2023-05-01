@@ -47,6 +47,9 @@ class Databse{
       let result = await db.all(`SELECT race_name, race_date FROM raceWeekend WHERE raceWeekend_ID IN (SELECT raceWeekend_ID FROM raceInSeason WHERE season_ID = (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)) AND (SELECT category_ID FROM category WHERE category_name = ?))`,[seasonYear, categoryName,categoryName]);
       return result;
     }
+    static async findEntries(db, categoryName, seasonYear){
+      return [];
+    }
     static async newSeason(db, categoryName, year, scoring){
       categoryName = categoryName.replace(/_/g, " ");
       await db.run(`INSERT INTO season (category_ID, season_year, season_scoring) VALUES ((SELECT category_ID FROM category WHERE category_name = ?),?,?)`,[categoryName,year, scoring]);
@@ -75,6 +78,29 @@ class Databse{
     static async newRaceWeekend(db, raceName, raceDate, categoryName, seasonYear){
       let result = await db.run(`INSERT INTO raceWeekend (category_ID, race_date, race_name, practiceSession_ID, qualifyingSession_ID, race_ID, circuit_ID) VALUES ((SELECT category_ID FROM category WHERE category_name = ?), ?, ?, 0, 0, 0, 0)`,[categoryName,raceDate,raceName]);
       await db.run(`INSERT INTO raceInSeason (season_ID, raceWeekend_ID, category_ID) VALUES ((SELECT season_ID FROM SEASON WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)),?,(SELECT category_ID FROM category WHERE category_name = ?))`,[seasonYear,categoryName,result.lastID,categoryName]);
+    }
+    static async newSeasonEntry(db, team, driver, vehicle, categoryName, seasonYear){
+      let driverResult = await db.get(`SELECT * FROM driver WHERE driver_first_name = ? AND driver_last_name = ?`,driver.split(" "));
+      if(!driverResult){
+        driverResult = await db.run(`INSERT INTO driver (driver_first_name, driver_last_name,driver_number,driver_DOB,driver_nationality, driver_penalty_points, driver_picture) VALUES 
+        (?,?,0,"","",0,"")`,driver.split(" "));
+        driverResult = driverResult.lastID;
+      }else{
+        driverResult = driverResult.driver_ID;
+      }
+      let teamResult = await db.get(`SELECT * FROM team WHERE team_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)`,[team,categoryName]);
+      if(!teamResult){
+        teamResult = await db.run(`INSERT INTO team (category_ID, team_name, team_base_location, team_picture) VALUES ((SELECT category_ID FROM category WHERE category_name = ?), ?, "","")`,[categoryName,team]);
+        teamResult = teamResult.lastID;
+      }else{
+        teamResult = teamResult.team_ID;
+      }
+      await db.run(`INSERT INTO drove (season_ID, team_ID, driver_ID) VALUES ((SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)),?,?)`,[seasonYear, categoryName, teamResult, driverResult]);
+      let vehicleResult = await db.get(`SELECT * FROM vehicle WHERE vehicle_chassis_name = ? AND vehicle_year = ? AND team_ID = (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[vehicle,seasonYear, team,categoryName]);
+      if(!vehicleResult){
+        await db.run(`INSERT INTO vehicle (team_ID, vehicle_engine, vehicle_chassis_name, vehicle_year, vehicle_power, vehicle_weight, vehicle_picture) VALUES (?,"",?,?,"","","")`,[teamResult,vehicle,seasonYear])
+      }
+
     }
     static async newSession(db, categoryName,seasonYear,raceName,sessionType,sessionTime,sessionDate,sessionWeather,points){
       if(sessionType == "Practice"){

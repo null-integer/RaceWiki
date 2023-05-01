@@ -114,8 +114,6 @@ app.get('/category/:categoryName', async (req, res) =>{
   
     //General Info Data
     let generalInfo = [
-      ["Drivers",""],
-      ["Teams",""],
       ["Driver's Champion",""],
       ["Constructor's Champion",""]
     ];
@@ -359,8 +357,12 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
     calendarArray.push({"Round":round + 1, "Date":calendar[round].race_date, "Name":calendar[round].race_name});
   }
 
+  let entries = await Database.findEntries(db,categoryName, req.params["seasonYear"]);
+
+
   let sections = [
     ["Table","Scoring System",scoringSystem, ["Position","Points"],["Text","Text"]],
+    ["Table","Entries",[],["Team","Driver","Vehicle"],["Text","Text","Text"]],
     ["Table","Calendar",calendarArray,["Round","Date","Name"],["Text","Text","Link"],"/race/"+req.params["categoryName"]+"/"+req.params["seasonYear"]+"/"],
     ["Text","Driver's Standings",""],
     ["Text","Constructor's Standings",""],
@@ -369,7 +371,9 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
   let generalInfo = [
     ["Year", seasonInfo.season_year],
     ["Season #",""],
-    ["Races",""],
+    ["Races",calendarArray.length],
+    ["Drivers",""],
+    ["Teams",""],
     ["Driver's Champion",""],
     ["Constructor's Champion",""],
   ];
@@ -402,6 +406,17 @@ app.post('/season/:categoryName/:seasonYear/race',async (req, res) =>{
   let raceDate = req.body.raceDateInput;
 
   Database.newRaceWeekend(db, raceName, raceDate, req.params["categoryName"], req.params["seasonYear"]);
+
+  res.redirect(req.get('referer'));
+});
+
+app.post('/season/:categoryName/:seasonYear/entry',async (req, res) =>{
+  
+  let team = req.body.teamInput;
+  let driver = req.body.driverInput;
+  let vehicle = req.body.vehicleInput;
+
+  Database.newSeasonEntry(db, team, driver, vehicle, req.params["categoryName"], req.params["seasonYear"]);
 
   res.redirect(req.get('referer'));
 });
