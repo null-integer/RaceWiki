@@ -411,8 +411,8 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
   let schedule = await Database.findSchedule(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
   let circuit = await Database.findCircuit(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
   let practiceResults = await Database.findPracticeResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
-  let qualifyingResults = await Database.findQualifyingResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);;
-  let raceResults = [];
+  let qualifyingResults = await Database.findQualifyingResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
+  let raceResults = await Database.findRaceResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
   if(!circuit){
     circuit = {"circuit_name":""};
   }
@@ -422,14 +422,30 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
     ["Table", "Circuit",[{"name":circuit.circuit_name}],[],["Link"],"/circuit/"],
   ];
 
-  // let index = {"Practice":1, "Qualifying":1, "Race":1};
   let table = {"Practice":practiceResults, "Qualifying":qualifyingResults, "Race":raceResults};
   schedule.forEach(x=>{
-    // if(schedule.filter(y => y.sessionType == x.sessionType).length > 1){
-    //   sections.push(["Table",x.sessionType + " "+index[x.sessionType] + " Results",table[x.sessionType],["Position","Driver","Lap Time","Points"],["Text","Link","Text","Text"],"/driver/"]);
-    //   index[x.sessionType] += 1;
-    // }
-    sections.push(["Table",x.sessionType +" "+x.sessionNum+" Results",table[x.sessionType],["Position","Driver","Lap Time","Points"],["Text","Link","Text","Text"],"/driver/"]);
+
+    let sessionTable = table[x.sessionType].filter(y => x.sessionNum == y.session_number);
+
+    if(x.sessionType == "Practice" || x.sessionType == "Qualifying"){
+      sessionTable = sessionTable.map(y => function(){
+        if(x.sessionNum == y.session_number){
+          return {"Driver":y.driver_first_name + " "+y.driver_last_name, "Lap Time": y.lap_time};
+        }
+      }());
+      sessionTable.sort((a,b) => { return a["Lap Time"] - b["Lap Time"]});
+      sessionTable = sessionTable.map((z,index) => function(){return {"Position":index+1, "Driver":z["Driver"], "Lap Time": z["Lap Time"]}}() );
+  
+    }else{
+      sessionTable = sessionTable.map(y => function(){
+        if(x.sessionNum == y.session_number){
+          return {"Position":y.position,"Driver":y.driver_first_name + " "+y.driver_last_name, "Lap Time": y.lap_time};
+        }
+      }());
+      sessionTable.sort((a,b) => { return a["Position"] - b["Position"]});  
+    }
+      
+    sections.push(["Table",x.sessionType +" "+x.sessionNum+" Results",sessionTable,["Position","Driver","Lap Time","Points"],["Text","Link","Text","Text"],"/driver/"]);
 
   });
 
@@ -484,22 +500,33 @@ app.post('/race/:categoryName/:seasonYear/:raceName/circuit',async (req, res) =>
   res.redirect(req.get('referer'));
 });
 
-app.post('/race/:categoryName/:seasonYear/:raceName/PracticeResult',async (req, res) =>{
+app.post('/race/:categoryName/:seasonYear/:raceName/PracticeResult/:sessionNum',async (req, res) =>{
   
   let driverName = req.body.driverNameInput;
   let driverLapTime = req.body.driverLapTimeInput;
 
-  Database.newPracticeResult(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverName,driverLapTime);
+  Database.newPracticeResult(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverName,driverLapTime,req.params["sessionNum"]);
   
   res.redirect(req.get('referer'));
 });
 
-app.post('/race/:categoryName/:seasonYear/:raceName/QualifyingResult',async (req, res) =>{
+app.post('/race/:categoryName/:seasonYear/:raceName/QualifyingResult/:sessionNum',async (req, res) =>{
   
   let driverName = req.body.driverNameInput;
   let driverLapTime = req.body.driverLapTimeInput;
 
-  Database.newQualifyingResult(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverName,driverLapTime);
+  Database.newQualifyingResult(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverName,driverLapTime,req.params["sessionNum"]);
+  
+  res.redirect(req.get('referer'));
+});
+
+app.post('/race/:categoryName/:seasonYear/:raceName/RaceResult/:sessionNum',async (req, res) =>{
+  
+  let driverName = req.body.driverNameInput;
+  let driverLapTime = req.body.driverLapTimeInput;
+  let driverPosition = req.body.driverPositionInput;
+
+  Database.newRaceResult(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverName,driverLapTime,driverPosition,req.params["sessionNum"]);
   
   res.redirect(req.get('referer'));
 });

@@ -78,7 +78,7 @@ class Databse{
     }
     static async newSession(db, categoryName,seasonYear,raceName,sessionType,sessionTime,sessionDate,sessionWeather,points){
       if(sessionType == "Practice"){
-        let result = await db.run(`INSERT INTO practiceSession (practiceSession_date, practiceSession_time, result_ID, practiceSession_weather,points) VALUES (?,?,0,?,?)`,[sessionDate,sessionTime,sessionWeather,points]);
+        let result = await db.run(`INSERT INTO practiceSession (practiceSession_date, practiceSession_time, practiceSession_weather,points) VALUES (?,?,?,?)`,[sessionDate,sessionTime,sessionWeather,points]);
 
         let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                           (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
@@ -99,7 +99,7 @@ class Databse{
         await db.run(`UPDATE raceWeekend SET practiceSession_ID = ? WHERE raceWeekend_ID = ?`,[newSessionString,intersection[0]]);
 
       }else if(sessionType == "Qualifying"){
-        let result = await db.run(`INSERT INTO qualifyingSession (qualifyingSession_date, qualifyingSession_time, result_ID, qualifyingSession_weather,points) VALUES (?,?,0,?,?)`,[sessionDate,sessionTime,sessionWeather,points]);
+        let result = await db.run(`INSERT INTO qualifyingSession (qualifyingSession_date, qualifyingSession_time, qualifyingSession_weather,points) VALUES (?,?,?,?)`,[sessionDate,sessionTime,sessionWeather,points]);
         let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                           (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
         let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
@@ -118,7 +118,7 @@ class Databse{
 
         await db.run(`UPDATE raceWeekend SET qualifyingSession_ID = ? WHERE raceWeekend_ID = ?`,[newSessionString,intersection[0]]);
       }else{
-        let result = await db.run(`INSERT INTO race (race_date, race_time, result_ID, race_weather,race_duration,race_laps,race_fastest_lap, race_fastest_lap_driver_ID,points) VALUES (?,?,0,?,0,0,0,0,?)`,[sessionDate,sessionTime,sessionWeather,points]);
+        let result = await db.run(`INSERT INTO race (race_date, race_time, race_weather,race_duration,race_laps,race_fastest_lap, race_fastest_lap_driver_ID,points) VALUES (?,?,?,0,0,0,0,?)`,[sessionDate,sessionTime,sessionWeather,points]);
         let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                           (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
         let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
@@ -216,7 +216,7 @@ class Databse{
       return result;
     }
 
-    static async newPracticeResult(db, categoryName,seasonYear,raceName,driverName,driverLapTime){
+    static async newPracticeResult(db, categoryName,seasonYear,raceName,driverName,driverLapTime, sessionNum){
 
       let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                         (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
@@ -230,15 +230,15 @@ class Databse{
       if(!driverID){
         let driverID = await db.run(`INSERT INTO driver (driver_first_name, driver_last_name, driver_number, driver_DOB, driver_nationality, driver_penalty_points, driver_picture) 
                                     VALUES (?,?,0,"","",0,"")`,driverName.split(" ").slice(0,2));
-        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time) VALUES (?,?,"Practice",0,0,"",?)`,[intersection[0],driverID.lastID, driverLapTime]);
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time, session_number) VALUES (?,?,"Practice",0,0,"",?,?)`,[intersection[0],driverID.lastID, driverLapTime,sessionNum]);
         
       }else{
-        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time) VALUES (?,?,"Practice",0,0,"",?)`,[intersection[0],driverID.driver_ID,driverLapTime]);      
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time, session_number) VALUES (?,?,"Practice",0,0,"",?,?)`,[intersection[0],driverID.driver_ID,driverLapTime,sessionNum]);      
       }
 
     }
 
-    static async newQualifyingResult(db, categoryName,seasonYear,raceName,driverName,driverLapTime){
+    static async newQualifyingResult(db, categoryName,seasonYear,raceName,driverName,driverLapTime, sessionNum){
 
       let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                         (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
@@ -252,14 +252,35 @@ class Databse{
       if(!driverID){
         let driverID = await db.run(`INSERT INTO driver (driver_first_name, driver_last_name, driver_number, driver_DOB, driver_nationality, driver_penalty_points, driver_picture) 
                                     VALUES (?,?,0,"","",0,"")`,driverName.split(" ").slice(0,2));
-        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time) VALUES (?,?,"Qualifying",0,0,"",?)`,[intersection[0],driverID.lastID, driverLapTime]);
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time, session_number) VALUES (?,?,"Qualifying",0,0,"",?,?)`,[intersection[0],driverID.lastID, driverLapTime,sessionNum]);
         
       }else{
-        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time) VALUES (?,?,"Qualifying",0,0,"",?)`,[intersection[0],driverID.driver_ID,driverLapTime]);      
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time, session_number) VALUES (?,?,"Qualifying",0,0,"",?,?)`,[intersection[0],driverID.driver_ID,driverLapTime,sessionNum]);      
       }
 
     }
 
+    static async newRaceResult(db, categoryName,seasonYear,raceName,driverName,driverLapTime, driverPosition, sessionNum){
+
+      let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                        (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+      let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
+      
+      raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+      raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+      let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+      let driverID = await db.get(`SELECT driver_ID FROM driver WHERE driver_first_name = ? AND driver_last_name = ?`,driverName.split(" ").slice(0,2));
+      if(!driverID){
+        let driverID = await db.run(`INSERT INTO driver (driver_first_name, driver_last_name, driver_number, driver_DOB, driver_nationality, driver_penalty_points, driver_picture) 
+                                    VALUES (?,?,0,"","",0,"")`,driverName.split(" ").slice(0,2));
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time, session_number) VALUES (?,?,"Race",?,0,"",?,?)`,[intersection[0],driverID.lastID, driverPosition,driverLapTime,sessionNum]);
+        
+      }else{
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time, session_number) VALUES (?,?,"Race",?,0,"",?,?)`,[intersection[0],driverID.driver_ID,driverPosition,driverLapTime,sessionNum]);      
+      }
+
+    }
     static async newPitStop(db, categoryName,seasonYear,raceName,driverName,lapNumber,pitTime,totalTime){
       
 
@@ -274,13 +295,9 @@ class Databse{
       raceIDs = raceIDs.map(x => x.raceWeekend_ID);
       let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
 
-      let result = await db.all(`SELECT driver_first_name, driver_last_name,lap_time from (SELECT * FROM result NATURAL JOIN driver) WHERE raceWeekend_ID = ? AND session_type = "Practice"`,[intersection[0]]);
-
-      result.sort((a,b) => { return a.lap_time - b.lap_time});
-      result = result.map((x,index) => function(){return {"Position":index+1, "Driver":x.driver_first_name + " " + x.driver_last_name, "Lap Time": x.lap_time}}() );
+      let result = await db.all(`SELECT driver_first_name, driver_last_name,lap_time, session_number from (SELECT * FROM result NATURAL JOIN driver) WHERE raceWeekend_ID = ? AND session_type = "Practice"`,[intersection[0]]);  
       
-      return result;
-    
+      return result; 
     }
 
     static async findQualifyingResults(db,categoryName,seasonYear,raceName){
@@ -292,11 +309,23 @@ class Databse{
       raceIDs = raceIDs.map(x => x.raceWeekend_ID);
       let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
 
-      let result = await db.all(`SELECT driver_first_name, driver_last_name,lap_time from (SELECT * FROM result NATURAL JOIN driver) WHERE raceWeekend_ID = ? AND session_type = "Qualifying"`,[intersection[0]]);
+      let result = await db.all(`SELECT driver_first_name, driver_last_name,lap_time, session_number from (SELECT * FROM result NATURAL JOIN driver) WHERE raceWeekend_ID = ? AND session_type = "Qualifying"`,[intersection[0]]);
 
-      result.sort((a,b) => { return a.lap_time - b.lap_time});
-      result = result.map((x,index) => function(){return {"Position":index+1, "Driver":x.driver_first_name + " " + x.driver_last_name, "Lap Time": x.lap_time}}() );
+      return result;
+    
+    }
+
+    static async findRaceResults(db,categoryName,seasonYear,raceName){
+      let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                        (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+      let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
       
+      raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+      raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+      let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+      let result = await db.all(`SELECT position, driver_first_name, driver_last_name,lap_time, session_number from (SELECT * FROM result NATURAL JOIN driver) WHERE raceWeekend_ID = ? AND session_type = "Race"`,[intersection[0]]);
+
       return result;
     
     }

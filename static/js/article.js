@@ -37,10 +37,11 @@ function populateForm(buttonID,relation){
     let form = document.getElementById("NewForm");
     form.method = "POST";
     let formTitle = document.createElement("h3");
+    let sessionNum = buttonID.match(/\d+/g);
 
-    if(buttonID.includes("Practice") || buttonID.includes("Qualifying") || buttonID.includes("Race")){
+
+    if(buttonID.includes("Practice") || buttonID.includes("Qualifying") || buttonID.includes("Race")){        
         buttonID = buttonID.replace(/ \d+/g,"");
-        console.log(buttonID);
     }
 
     switch(buttonID) {
@@ -248,7 +249,7 @@ function populateForm(buttonID,relation){
             //Form Title 
             formTitle.innerHTML = "New Practice Result";
             form.appendChild(formTitle);
-            form.action = "/race/"+relation + "/PracticeResult";
+            form.action = "/race/"+relation + "/PracticeResult/"+sessionNum+"/";
 
             //Driver Name
             addLabelAndText(form,"Driver Name","driverNameInput");
@@ -263,7 +264,7 @@ function populateForm(buttonID,relation){
             //Form Title 
             formTitle.innerHTML = "New Qualifying Result";
             form.appendChild(formTitle);
-            form.action = "/race/"+relation + "/QualifyingResult";
+            form.action = "/race/"+relation + "/QualifyingResult/"+sessionNum+"/";
 
             //Driver Name
             addLabelAndText(form,"Driver Name","driverNameInput");
@@ -273,6 +274,20 @@ function populateForm(buttonID,relation){
 
         break;
 
+        case "Race ResultsButton":
+            //Form Title 
+            formTitle.innerHTML = "New Race Result";
+            form.appendChild(formTitle);
+            form.action = "/race/"+relation + "/RaceResult/"+sessionNum+"/";
+
+            //Driver Name
+            addLabelAndText(form,"Driver Name","driverNameInput");
+
+            addLabelAndTextArea(form,"Driver Lap Time","driverLapTimeInput",1,"00:00:00");
+            
+            addLabelAndText(form,"Driver Position","driverPositionInput");
+
+        break;
         case "Pit StopsButton":
             //Form Title 
             formTitle.innerHTML = "New Pit Stop";
