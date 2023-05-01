@@ -413,6 +413,8 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
   let practiceResults = await Database.findPracticeResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
   let qualifyingResults = await Database.findQualifyingResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
   let raceResults = await Database.findRaceResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
+  let lastRace;
+  let lastQuali;
   if(!circuit){
     circuit = {"circuit_name":""};
   }
@@ -435,18 +437,30 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
       }());
       sessionTable.sort((a,b) => { return a["Lap Time"] - b["Lap Time"]});
       sessionTable = sessionTable.map((z,index) => function(){return {"Position":index+1, "Driver":z["Driver"], "Lap Time": z["Lap Time"]}}() );
-  
+      sections.push(["Table",x.sessionType +" "+x.sessionNum+" Results",sessionTable,["Position","Driver","Lap Time","Points"],["Text","Link","Text","Text"],"/driver/"]);
+      if(x.sessionType == "Qualifying"){
+        if(!lastQuali){
+          lastQuali = sessionTable;
+        }else{
+          lastQuali = sessionTable;
+        }
+      }
     }else{
       sessionTable = sessionTable.map(y => function(){
         if(x.sessionNum == y.session_number){
           return {"Position":y.position,"Driver":y.driver_first_name + " "+y.driver_last_name, "Lap Time": y.lap_time};
         }
       }());
-      sessionTable.sort((a,b) => { return a["Position"] - b["Position"]});  
+      sessionTable.sort((a,b) => { return a["Position"] - b["Position"]});
+
+      sections.push(["Table",x.sessionType +" "+x.sessionNum+" Results",sessionTable,["Position","Driver","Fastest Lap Time","Points"],["Text","Link","Text","Text"],"/driver/"]);
+      if(!lastRace){
+        lastRace = sessionTable;
+      }else{
+        lastRace = sessionTable;
+      }
     }
       
-    sections.push(["Table",x.sessionType +" "+x.sessionNum+" Results",sessionTable,["Position","Driver","Lap Time","Points"],["Text","Link","Text","Text"],"/driver/"]);
-
   });
 
   sections.push(["Table","Pit Stops",[],["Driver","Lap","Pit Time","Total Time","Description"],["Text","Text","Text","Text","Text"]]);
@@ -455,9 +469,8 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
   let generalInfo = [
     ["Season",req.params["seasonYear"]],
     ["Circuit",circuit.circuit_name],
-    ["Laps",""],
-    ["Win",""],
-    ["Pole Position",""],
+    ["Win", lastRace.length == 0 || lastRace == undefined ? "" : lastRace[0].Driver],
+    ["Pole Position",lastQuali.length == 0 || lastQuali == undefined ? "" : lastQuali[0].Driver],
     ["Fastest Lap",""],
   ];
 

@@ -118,7 +118,7 @@ class Databse{
 
         await db.run(`UPDATE raceWeekend SET qualifyingSession_ID = ? WHERE raceWeekend_ID = ?`,[newSessionString,intersection[0]]);
       }else{
-        let result = await db.run(`INSERT INTO race (race_date, race_time, race_weather,race_duration,race_laps,race_fastest_lap, race_fastest_lap_driver_ID,points) VALUES (?,?,?,0,0,0,0,?)`,[sessionDate,sessionTime,sessionWeather,points]);
+        let result = await db.run(`INSERT INTO race (race_date, race_time, race_weather,points) VALUES (?,?,?,?)`,[sessionDate,sessionTime,sessionWeather,points]);
         let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                           (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
         let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
@@ -230,10 +230,10 @@ class Databse{
       if(!driverID){
         let driverID = await db.run(`INSERT INTO driver (driver_first_name, driver_last_name, driver_number, driver_DOB, driver_nationality, driver_penalty_points, driver_picture) 
                                     VALUES (?,?,0,"","",0,"")`,driverName.split(" ").slice(0,2));
-        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time, session_number) VALUES (?,?,"Practice",0,0,"",?,?)`,[intersection[0],driverID.lastID, driverLapTime,sessionNum]);
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number) VALUES (?,?,"Practice",0,"",?,?)`,[intersection[0],driverID.lastID, driverLapTime,sessionNum]);
         
       }else{
-        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time, session_number) VALUES (?,?,"Practice",0,0,"",?,?)`,[intersection[0],driverID.driver_ID,driverLapTime,sessionNum]);      
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number) VALUES (?,?,"Practice",0,"",?,?)`,[intersection[0],driverID.driver_ID,driverLapTime,sessionNum]);      
       }
 
     }
@@ -252,10 +252,10 @@ class Databse{
       if(!driverID){
         let driverID = await db.run(`INSERT INTO driver (driver_first_name, driver_last_name, driver_number, driver_DOB, driver_nationality, driver_penalty_points, driver_picture) 
                                     VALUES (?,?,0,"","",0,"")`,driverName.split(" ").slice(0,2));
-        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time, session_number) VALUES (?,?,"Qualifying",0,0,"",?,?)`,[intersection[0],driverID.lastID, driverLapTime,sessionNum]);
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number) VALUES (?,?,"Qualifying",0,"",?,?)`,[intersection[0],driverID.lastID, driverLapTime,sessionNum]);
         
       }else{
-        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time, session_number) VALUES (?,?,"Qualifying",0,0,"",?,?)`,[intersection[0],driverID.driver_ID,driverLapTime,sessionNum]);      
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number) VALUES (?,?,"Qualifying",0,"",?,?)`,[intersection[0],driverID.driver_ID,driverLapTime,sessionNum]);      
       }
 
     }
@@ -274,10 +274,10 @@ class Databse{
       if(!driverID){
         let driverID = await db.run(`INSERT INTO driver (driver_first_name, driver_last_name, driver_number, driver_DOB, driver_nationality, driver_penalty_points, driver_picture) 
                                     VALUES (?,?,0,"","",0,"")`,driverName.split(" ").slice(0,2));
-        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time, session_number) VALUES (?,?,"Race",?,0,"",?,?)`,[intersection[0],driverID.lastID, driverPosition,driverLapTime,sessionNum]);
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number) VALUES (?,?,"Race",?,"",?,?)`,[intersection[0],driverID.lastID, driverPosition,driverLapTime,sessionNum]);
         
       }else{
-        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, laps_lead, result_comment, lap_time, session_number) VALUES (?,?,"Race",?,0,"",?,?)`,[intersection[0],driverID.driver_ID,driverPosition,driverLapTime,sessionNum]);      
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number) VALUES (?,?,"Race",?,"",?,?)`,[intersection[0],driverID.driver_ID,driverPosition,driverLapTime,sessionNum]);      
       }
 
     }
