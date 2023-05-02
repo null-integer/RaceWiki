@@ -103,6 +103,40 @@ app.post('/signin',(req,res)=>{
 
 });
 
+//singup page
+app.get('./register',(req,res)=>{
+  res.render('register');
+})
+
+//create user in db
+app.post('./register',(req,res)=>{
+  let errors = [];
+  let username = req.body.username.trim();
+  let pw = req.body.password.trim();
+  if(username.length==0){
+    errors.push({msg:"Please enter username"});
+  }
+  else{
+    User.findOne({where:{username:username}}).then(user=>{
+      if(user){
+        errors.push({msg:'This username is already taken'});
+      }
+      if(pw.length<6){
+        errors.push({msg:"Password must be at least 6 characters"});
+      }
+      if(errors.length == 0){
+        User.create({
+          username: username,
+          pwhash: bcrypt.hashSync(pw,10)
+        }).then(user=>{
+          res.redirect('/homepage')
+        });
+      }
+    })
+  }
+  
+})
+
 //Control Panel 
 app.get('/controlpanel', async (req, res) => {
 	res.render('controlPanel',{
