@@ -1,4 +1,5 @@
 //Only functions not visible to normal users are stored here
+//JavaScript to make different forms for Admin Input
 
 function addLabelAndText(form, inputLabelText, inputID){
     let inputLabel = document.createElement("label");
@@ -327,6 +328,17 @@ function populateForm(buttonID,relation){
             addLabelAndText(form,"Team Vehicle:","vehicleInput");
 
 
+        break;
+
+        case "IncidentsButton":
+            //Form Title 
+            formTitle.innerHTML = "New Incident";
+            form.appendChild(formTitle);
+            form.action = "/race/" + relation + "/incident";
+
+            addLabelAndTextArea(form, "Drivers Involved", "DriversInvolvedInput",10,"First-Name Last-Name\nFirst-Name Last-Name");
+            addLabelAndText(form,"Lap Number:","lapNumberInput");
+            addLabelAndTextArea(form,"Incident Description","incidentDescriptionInput",10,"");
         break;
 
         default:

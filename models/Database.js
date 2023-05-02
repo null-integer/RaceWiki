@@ -1,6 +1,10 @@
+/*
+  Database model to connect to Sqlite
+*/
 class Databse{
 
     static async findCategorybyName(db, categoryName){
+        categoryName = categoryName.replace(/_/g, " ");
         const result = await db.get("SELECT * FROM category WHERE category_name = ?;",[categoryName]);
         return result;
     }
@@ -11,6 +15,7 @@ class Databse{
     }
 
     static async findFlagsByCategory(db, categoryName){
+      categoryName = categoryName.replace(/_/g, " ");
       const result = await db.all(`SELECT flag_icon, flag_name, flag_meaning FROM flag WHERE flag_ID in 
       (SELECT flag_ID FROM categoryFlag WHERE category_ID = 
         (SELECT category_ID FROM category WHERE category_name = ?));`,[categoryName]);
@@ -18,18 +23,21 @@ class Databse{
     }
 
     static async findTeamsByCategory(db, categoryName){
+      categoryName = categoryName.replace(/_/g, " ");
       const result = await db.all(`SELECT team_name FROM team WHERE category_ID = 
         (SELECT category_ID FROM category WHERE category_name = ?)`,[categoryName]);
       return result;
     }
 
     static async findTeamByCategory(db, categoryName, teamName){
+      categoryName = categoryName.replace(/_/g, " ");
       const result = await db.get(`SELECT * FROM team WHERE category_ID = 
         (SELECT category_ID FROM category WHERE category_name = ?) AND team_name = ?`,[categoryName, teamName]);
       return result;
     }
 
     static async findSeasonsByCategory(db, categoryName){
+      categoryName = categoryName.replace(/_/g, " ");
       let result = await db.all(`SELECT season_year FROM season WHERE category_ID = 
       (SELECT category_ID FROM category WHERE category_name = ?)`,[categoryName]);
       for(let row of result){
@@ -39,15 +47,18 @@ class Databse{
     }
 
     static async findSeasonByCategoryandYear(db, categoryName, seasonYear){
+      categoryName = categoryName.replace(/_/g, " ");
       let result = await db.get(`SELECT * FROM season WHERE category_ID = 
       (SELECT category_ID FROM category WHERE category_name = ?) AND season_year = ?`,[categoryName, parseInt(seasonYear)]);
       return result;
     }
     static async findCalendar(db, categoryName, seasonYear){
+      categoryName = categoryName.replace(/_/g, " ");
       let result = await db.all(`SELECT race_name, race_date FROM raceWeekend WHERE raceWeekend_ID IN (SELECT raceWeekend_ID FROM raceInSeason WHERE season_ID = (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)) AND (SELECT category_ID FROM category WHERE category_name = ?))`,[seasonYear, categoryName,categoryName]);
       return result;
     }
     static async findEntries(db, categoryName, seasonYear){
+      categoryName = categoryName.replace(/_/g, " ");
       let result = await db.all(`SELECT team_name, driver_first_name, driver_last_name, vehicle_chassis_name FROM (SELECT * FROM (SELECT * FROM (SELECT * FROM drove WHERE season_ID = (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))) NATURAL JOIN driver) NATURAL JOIN team) NATURAL JOIN vehicle`,[seasonYear, categoryName]);
       result = result.map(x => function(){return{"team":x.team_name, "driver":x.driver_first_name + " " + x.driver_last_name, "vehicle":x.vehicle_chassis_name}}());
       return result;
@@ -60,6 +71,8 @@ class Databse{
       await db.run(`INSERT INTO team (category_ID, team_name, team_base_location, team_picture) VALUES ((SELECT category_ID FROM category WHERE category_name = ?),?,?,?)`,[categoryName,teamName,teamBaselocation,teamPictureURL]);
     }
     static async newFlag(db, categoryName, flagName,flagIcon, flagMeaning){
+      categoryName = categoryName.replace(/_/g, " ");
+
       let result = await db.get("SELECT * FROM flag WHERE flag_name = ? AND flag_icon = ? AND flag_meaning = ?",[flagName,flagIcon, flagMeaning]);
       
       if(result){
@@ -70,6 +83,7 @@ class Databse{
       }
     }
     static async newScoring(db,position,points, categoryName, seasonYear){
+      categoryName = categoryName.replace(/_/g, " ");
       let result = await db.get("SELECT season_scoring FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[seasonYear,categoryName])
 
       await db.run(`UPDATE season SET season_scoring = ? WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)`,[
@@ -78,10 +92,13 @@ class Databse{
       ]);
     }
     static async newRaceWeekend(db, raceName, raceDate, categoryName, seasonYear){
+      categoryName = categoryName.replace(/_/g, " ");
       let result = await db.run(`INSERT INTO raceWeekend (category_ID, race_date, race_name, practiceSession_ID, qualifyingSession_ID, race_ID, circuit_ID) VALUES ((SELECT category_ID FROM category WHERE category_name = ?), ?, ?, 0, 0, 0, 0)`,[categoryName,raceDate,raceName]);
       await db.run(`INSERT INTO raceInSeason (season_ID, raceWeekend_ID, category_ID) VALUES ((SELECT season_ID FROM SEASON WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)),?,(SELECT category_ID FROM category WHERE category_name = ?))`,[seasonYear,categoryName,result.lastID,categoryName]);
     }
     static async newSeasonEntry(db, team, driver, vehicle, categoryName, seasonYear){
+      categoryName = categoryName.replace(/_/g, " ");
+
       let driverResult = await db.get(`SELECT * FROM driver WHERE driver_first_name = ? AND driver_last_name = ?`,driver.split(" "));
       if(!driverResult){
         driverResult = await db.run(`INSERT INTO driver (driver_first_name, driver_last_name,driver_number,driver_DOB,driver_nationality, driver_penalty_points, driver_picture) VALUES 
@@ -105,6 +122,8 @@ class Databse{
 
     }
     static async newSession(db, categoryName,seasonYear,raceName,sessionType,sessionTime,sessionDate,sessionWeather,points){
+      categoryName = categoryName.replace(/_/g, " ");
+
       if(sessionType == "Practice"){
         let result = await db.run(`INSERT INTO practiceSession (practiceSession_date, practiceSession_time, practiceSession_weather,points) VALUES (?,?,?,?)`,[sessionDate,sessionTime,sessionWeather,points]);
 
@@ -168,6 +187,7 @@ class Databse{
     }
 
     static async findSchedule(db,categoryName,seasonYear,raceName){
+      categoryName = categoryName.replace(/_/g, " ");
       let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                         (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
       let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
@@ -192,6 +212,8 @@ class Databse{
     }
 
     static async setCircuit(db, categoryName,seasonYear,raceName,circuitName){
+      categoryName = categoryName.replace(/_/g, " ");
+
       let circuit = await db.get(`SELECT circuit_ID FROM circuit WHERE circuit_name = ?`,[circuitName]);
 
         let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
@@ -214,6 +236,7 @@ class Databse{
     }
 
     static async findCircuit(db,categoryName,seasonYear,raceName){
+      categoryName = categoryName.replace(/_/g, " ");
       let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                         (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
       let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
@@ -245,6 +268,7 @@ class Databse{
     }
 
     static async newPracticeResult(db, categoryName,seasonYear,raceName,driverName,driverLapTime, sessionNum){
+      categoryName = categoryName.replace(/_/g, " ");
 
       let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                         (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
@@ -267,6 +291,7 @@ class Databse{
     }
 
     static async newQualifyingResult(db, categoryName,seasonYear,raceName,driverName,driverLapTime, sessionNum){
+      categoryName = categoryName.replace(/_/g, " ");
 
       let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                         (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
@@ -289,6 +314,7 @@ class Databse{
     }
 
     static async newRaceResult(db, categoryName,seasonYear,raceName,driverName,driverLapTime, driverPosition, sessionNum){
+      categoryName = categoryName.replace(/_/g, " ");
 
       let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                         (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
@@ -310,6 +336,7 @@ class Databse{
 
     }
     static async newPitStop(db, categoryName,seasonYear,raceName,driverName,lapNumber,pitTime,totalTime,pitDescription){
+      categoryName = categoryName.replace(/_/g, " ");
 
       let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                         (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
@@ -331,12 +358,42 @@ class Databse{
         await db.run(`INSERT INTO pitstop (raceWeekend_ID,driver_ID, pitstop_time, pitstop_lap, pitstop_total_time,pitstop_description) 
         VALUES (?, ?,?,?,?,?)`,[intersection[0], driver.driver_ID, pitTime,lapNumber,totalTime,pitDescription]);
       }
+    }
 
-   
+    static async newIncident(db,categoryName,seasonYear,raceName,drivers,lapNumber,incidentDescription){
+      categoryName = categoryName.replace(/_/g, " ");
+
+      let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                        (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+      let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
+      
+      raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+      raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+      let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+      
+      await db.run(`INSERT INTO incident (raceWeekend_ID, incident_lap, incident_description, drivers_involved) VALUES (?,?,?,?)`,[intersection[0],lapNumber,incidentDescription,drivers]);
+    
+    }
+
+    static async findIncidents(db,categoryName,seasonYear,raceName){
+      categoryName = categoryName.replace(/_/g, " ");
+
+      let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                        (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+      let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
+      
+      raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+      raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+      let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+      let result = await db.all(`SELECT drivers_involved, incident_lap, incident_description FROM incident WHERE raceWeekend_ID = ?`,[intersection[0]]);
+      return result;
 
     }
 
     static async findPracticeResults(db,categoryName,seasonYear,raceName){
+      categoryName = categoryName.replace(/_/g, " ");
+
       let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                         (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
       let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
@@ -351,6 +408,8 @@ class Databse{
     }
 
     static async findQualifyingResults(db,categoryName,seasonYear,raceName){
+      categoryName = categoryName.replace(/_/g, " ");
+
       let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                         (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
       let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
@@ -366,6 +425,8 @@ class Databse{
     }
 
     static async findRaceResults(db,categoryName,seasonYear,raceName){
+      categoryName = categoryName.replace(/_/g, " ");
+
       let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                         (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
       let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
@@ -381,6 +442,8 @@ class Databse{
     }
 
     static async findPitStops(db,categoryName,seasonYear,raceName){
+      categoryName = categoryName.replace(/_/g, " ");
+
       let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
                                         (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
       let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
@@ -412,11 +475,15 @@ class Databse{
     }
 
     static async findVehicles(db, categoryName, teamName){
+      categoryName = categoryName.replace(/_/g, " ");
+
       let result = await db.all(`SELECT vehicle_chassis_name FROM vehicle WHERE team_ID = (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[teamName,categoryName]);
       return result;
     }
 
     static async findVehicle(db,categoryName, teamName, vehicleName){
+      categoryName = categoryName.replace(/_/g, " ");
+
       let result = await db.get(`SELECT * FROM vehicle WHERE vehicle_chassis_name = ? AND team_ID = (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[vehicleName, teamName, categoryName ]);
       return result;
     }

@@ -33,6 +33,7 @@ async function updateCategories(db){
   categories = categories.map(x => x.category_name);
 }
 
+//Function to compare lap times of drivers
 function compareTimes(a,b){
   let aTime = 0;
   let bTime = 0;
@@ -106,6 +107,7 @@ app.get('/newcategory', async (req, res) => {
   res.render('newCategory');
 });
 
+//New Category Post
 app.post('/newcategory', async (req, res) => {
   console.log(req.body);
   res.redirect("/");
@@ -123,6 +125,7 @@ app.get('/category/:categoryName', async (req, res) =>{
     let flags = await Database.findFlagsByCategory(db, categoryName);
     let teams = await Database.findTeamsByCategory(db, categoryName);
     let seasons = await Database.findSeasonsByCategory(db,categoryName);
+    seasons.sort((a,b) => parseInt(a.season_year) - parseInt(b.season_year));
 
     //Section Data
     //[Type of data in section, Section Title, Section Data, ...OPTIONS]
@@ -161,7 +164,9 @@ app.get('/category/:categoryName', async (req, res) =>{
   }  
 });
 
+//POST Methods for the category page
 app.post('/category/:categoryName/season',async (req, res) =>{
+
   let year = req.body.seasonYearinput;
   let scoring = req.body.seasonScoringinput.split("\r\n").join(",");
 
@@ -191,77 +196,92 @@ app.post('/category/:categoryName/flag',async (req, res) =>{
   res.redirect(req.get('referer'));
 });
 
+//Driver Page
 app.get('/driver/:driverName', async (req, res) =>{
 
   let driverName = req.params["driverName"].replace(/_/g, " "); 
   let driverInfo = await Database.findDriver(db, driverName);
+  if(driverInfo){
+    let sections = [
+      ["Table","Teams","",[]],
+      ["Table","Wins","",[]],
+      ["Table","Podiums","",[]],
+      ["Table","Pole Positions","",[]],
+      ["Table","Results","",[]],
+    ];
+  
+    let generalInfo = [
+      ["Date of Birth",driverInfo.driver_DOB],
+      ["Number",driverInfo.driver_number],
+      ["Nationality",driverInfo.driver_nationality],
+      ["Championships",""],
+      ["Penalty Points",driverInfo.driver_penalty_points],
+      ["Wins",""],
+      ["Podiums",""],
+      ["Pole Positions",""],
+      ["Fastests Laps",""],
+    ];
+  
+    let articleTitle = driverName;
+  
+    let props = {
+      categories:categories,
+      articleTitle: articleTitle,
+      sections:sections, 
+      generalInfo:generalInfo,
+      pictureURL:driverInfo.driver_picture,
+      relation:"/"
+    };
+  
+    res.render('article', {props:props});
 
-  let sections = [
-    ["Table","Teams","",[]],
-    ["Table","Wins","",[]],
-    ["Table","Podiums","",[]],
-    ["Table","Pole Positions","",[]],
-    ["Table","Results","",[]],
-  ];
+  }else{
+    res.render("notFound");
+  }
 
-  let generalInfo = [
-    ["Date of Birth",driverInfo.driver_DOB],
-    ["Number",driverInfo.driver_number],
-    ["Nationality",driverInfo.driver_nationality],
-    ["Championships",""],
-    ["Penalty Points",driverInfo.driver_penalty_points],
-    ["Wins",""],
-    ["Podiums",""],
-    ["Pole Positions",""],
-    ["Fastests Laps",""],
-  ];
-
-  let articleTitle = driverName;
-
-  let props = {
-    categories:categories,
-    articleTitle: articleTitle,
-    sections:sections, 
-    generalInfo:generalInfo,
-    pictureURL:driverInfo.driver_picture,
-    relation:"/"
-  };
-
-  res.render('article', {props:props});
 });
 
+//Circuit Page
 app.get('/circuit/:circuitName', async (req, res) =>{
 
   let circuitInfo = await Database.findCircuitInfo(db,req.params["circuitName"]);
-  let turns = await Database.getTurns(db,req.params["circuitName"]);
-  turns.sort((a,b)=>a["turn_number"]-b["turn_number"]);
 
-  let sections = [
-    ["Table","Turns",turns, ["Turn Number","Turn Name"],["Text","Text"]],
-  ];
+  if(circuitInfo){
+    let turns = await Database.getTurns(db,req.params["circuitName"]);
+    turns.sort((a,b)=>a["turn_number"]-b["turn_number"]);
+  
+    let sections = [
+      ["Table","Turns",turns, ["Turn Number","Turn Name"],["Text","Text"]],
+    ];
+  
+    let generalInfo = [
+      ["Country",circuitInfo.circuit_country],
+      ["City",circuitInfo.circuit_city],
+      ["Length",circuitInfo.circuit_length + " Km"],
+      ["Turns",turns.length],
+      ["Lap Record",""]
+    ];
+  
+    let articleTitle = req.params["circuitName"].replace(/_/g, " ");
+  
+    let props = {
+      categories:categories,
+      articleTitle: articleTitle,
+      sections:sections, 
+      generalInfo:generalInfo,
+      relation: "/circuit/"+req.params["circuitName"]+"/",
+      pictureURL: circuitInfo.circuit_picture
+    };
+  
+    res.render('article', {props:props});
 
-  let generalInfo = [
-    ["Country",circuitInfo.circuit_country],
-    ["City",circuitInfo.circuit_city],
-    ["Length",circuitInfo.circuit_length + " Km"],
-    ["Turns",turns.length],
-    ["Lap Record",""]
-  ];
+  }else{
+    res.render("notFound");
+  }
 
-  let articleTitle = req.params["circuitName"].replace(/_/g, " ");
-
-  let props = {
-    categories:categories,
-    articleTitle: articleTitle,
-    sections:sections, 
-    generalInfo:generalInfo,
-    relation: "/circuit/"+req.params["circuitName"]+"/",
-    pictureURL: circuitInfo.circuit_picture
-  };
-
-  res.render('article', {props:props});
 });
 
+//POST methods for the circuit page
 app.post('/circuit/:circuitName/turn',async (req, res) =>{
   
   let turnNumber = req.body.turnNumberInput;
@@ -272,49 +292,58 @@ app.post('/circuit/:circuitName/turn',async (req, res) =>{
   res.redirect(req.get('referer'));
 });
 
+
+//Team Page
 app.get('/team/:categoryName/:teamName', async (req, res) =>{
 
   let teamInfo = await Database.findTeamByCategory(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
-  let vehicles = await Database.findVehicles(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
+
+  if(teamInfo){
+    let vehicles = await Database.findVehicles(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
   
-  let sections = [
+    let sections = [
+  
+      ["Text","Constructor's Championships", ""],
+      ["Text","Driver's Championships", ""],
+      ["Table","Vehicles", vehicles,[],["Link"],"/vehicle/"+req.params["categoryName"]+ "/"+req.params["teamName"]+"/"],
+      ["Text","Drivers", ""],
+      ["Text","Victories", ""],
+      ["Text","Podiums", ""],
+      ["Text","Pole Positions", ""],
+      ["Text","Results" , ""],
+    ];
+  
+    let generalInfo = [
+      ["Team Base", teamInfo.team_base_location],
+      ["Drivers",""],
+      ["Chassis",""],
+      ["Engine",""],
+      ["Constructor's Championships",""],
+      ["Driver's Champsionships",""],
+      ["Victories",""],
+      ["Podiums",""],
+      ["Pole Positions",""],
+      ["Fastests Laps",""]
+    ];
+  
+    let articleTitle = teamInfo.team_name;
+    let props = {
+      categories:categories,
+      articleTitle: articleTitle,
+      sections:sections, 
+      generalInfo:generalInfo,
+      pictureURL: teamInfo.team_picture,
+      relation: "/"+req.params["categoryName"]+ "/"+req.params["teamName"]+"/"
+    };
+  
+    res.render('article', {props:props});
+  }else{
+    res.render("notFound");
+  }
 
-    ["Text","Constructor's Championships", ""],
-    ["Text","Driver's Championships", ""],
-    ["Table","Vehicles", vehicles,[],["Link"],"/vehicle/"+req.params["categoryName"]+ "/"+req.params["teamName"]+"/"],
-    ["Text","Drivers", ""],
-    ["Text","Victories", ""],
-    ["Text","Podiums", ""],
-    ["Text","Pole Positions", ""],
-    ["Text","Results" , ""],
-  ];
-
-  let generalInfo = [
-    ["Team Base", teamInfo.team_base_location],
-    ["Drivers",""],
-    ["Chassis",""],
-    ["Engine",""],
-    ["Constructor's Championships",""],
-    ["Driver's Champsionships",""],
-    ["Victories",""],
-    ["Podiums",""],
-    ["Pole Positions",""],
-    ["Fastests Laps",""]
-  ];
-
-  let articleTitle = teamInfo.team_name;
-  let props = {
-    categories:categories,
-    articleTitle: articleTitle,
-    sections:sections, 
-    generalInfo:generalInfo,
-    pictureURL: teamInfo.team_picture,
-    relation: "/"+req.params["categoryName"]+ "/"+req.params["teamName"]+"/"
-  };
-
-  res.render('article', {props:props});
 });
 
+//POST method for Team
 app.post('/:categoryName/:teamName/vehicle',async (req, res) =>{
   
   let engine = req.body.vehicleEngineInput;
@@ -329,99 +358,115 @@ app.post('/:categoryName/:teamName/vehicle',async (req, res) =>{
   res.redirect(req.get('referer'));
 });
 
+
+//Vehicle Page
 app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
 
   let vehicleInfo = await Database.findVehicle(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "), req.params["vehicleName"].replace(/_/g," "));
 
-  let sections = [
-    ["Text","Drivers",""],
-    ["Text","Wins",""],
-    ["Text","Podiums",""],
-    ["Text","Pole Positions",""],
-    ["Text","Full Results",""]
-  ];
+  if(vehicleInfo){
 
-  let generalInfo = [
-    ["Team",req.params["teamName"].replace(/_/g," ")],
-    ["Engine",vehicleInfo.vehicle_engine],
-    ["Power", vehicleInfo.vehicle_power + " HP"],
-    ["Weight",vehicleInfo.vehicle_weight + " Kg"],
-    ["Races",""],
-    ["Wins",""],
-    ["Podiums",""],
-    ["Pole Positions",""],
-    ["Fastests Laps",""]
-  ];
+    let sections = [
+      ["Text","Drivers",""],
+      ["Text","Wins",""],
+      ["Text","Podiums",""],
+      ["Text","Pole Positions",""],
+      ["Text","Full Results",""]
+    ];
+  
+    let generalInfo = [
+      ["Team",req.params["teamName"].replace(/_/g," ")],
+      ["Engine",vehicleInfo.vehicle_engine],
+      ["Power", vehicleInfo.vehicle_power + " HP"],
+      ["Weight",vehicleInfo.vehicle_weight + " Kg"],
+      ["Races",""],
+      ["Wins",""],
+      ["Podiums",""],
+      ["Pole Positions",""],
+      ["Fastests Laps",""]
+    ];
+  
+    let articleTitle = vehicleInfo.vehicle_chassis_name;
+    let props = {
+      categories:categories,
+      articleTitle: articleTitle,
+      sections:sections, 
+      generalInfo:generalInfo,
+      pictureURL: vehicleInfo.vehicle_picture
+    };
+  
+    res.render('article', {props:props});
+  }else{
+    res.render("notFound");
+  }
 
-  let articleTitle = vehicleInfo.vehicle_chassis_name;
-  let props = {
-    categories:categories,
-    articleTitle: articleTitle,
-    sections:sections, 
-    generalInfo:generalInfo,
-    pictureURL: vehicleInfo.vehicle_picture
-  };
-
-  res.render('article', {props:props});
 });
 
+//Season Page
 app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
 
   categoryName = req.params['categoryName'].replace(/_/g, " ");
   let seasonInfo = await Database.findSeasonByCategoryandYear(db, categoryName, req.params["seasonYear"]);
 
-  scoringSystem = [];
-  let scoringArray = seasonInfo.season_scoring.split(",");
-  scoringArray.forEach(score => {
-    scoringSystem.push({"position":score.split(":")[0], "points":score.split(":")[1]});
-  });
+  if(seasonInfo){
 
-  let calendar = await Database.findCalendar(db,categoryName, req.params["seasonYear"]);
-  calendarArray = [];
-  for(let round = 0; round < calendar.length; round+=1){
-    calendarArray.push({"Round":round + 1, "Date":calendar[round].race_date, "Name":calendar[round].race_name});
+    scoringSystem = [];
+    let scoringArray = seasonInfo.season_scoring.split(",");
+    scoringArray.forEach(score => {
+      scoringSystem.push({"position":score.split(":")[0], "points":score.split(":")[1]});
+    });
+  
+    let calendar = await Database.findCalendar(db,categoryName, req.params["seasonYear"]);
+    calendarArray = [];
+    for(let round = 0; round < calendar.length; round+=1){
+      calendarArray.push({"Round":round + 1, "Date":calendar[round].race_date, "Name":calendar[round].race_name});
+    }
+  
+    let entries = await Database.findEntries(db,categoryName, req.params["seasonYear"]);
+    let teams = [];
+    entries.forEach(x => {
+      if(!teams.includes(x["team"])){
+        teams.push(x["team"]);
+      }
+    });
+  
+  
+    let sections = [
+      ["Table","Scoring System",scoringSystem, ["Position","Points"],["Text","Text"]],
+      ["Table","Entries",entries,["Team","Driver","Vehicle"],["Text","Text","Text"]],
+      ["Table","Calendar",calendarArray,["Round","Date","Name"],["Text","Text","Link"],"/race/"+req.params["categoryName"]+"/"+req.params["seasonYear"]+"/"],
+      ["Text","Driver's Standings",""],
+      ["Text","Constructor's Standings",""],
+    ];
+  
+    let generalInfo = [
+      ["Year", seasonInfo.season_year],
+      ["Season #",""],
+      ["Races",calendarArray.length],
+      ["Drivers",entries.length],
+      ["Teams",teams.length],
+      ["Driver's Champion",""],
+      ["Constructor's Champion",""],
+    ];
+  
+    let articleTitle = req.params["seasonYear"]+ " "+categoryName+" Season";
+    let props = {
+      categories:categories,
+      articleTitle: articleTitle,
+      sections:sections, 
+      generalInfo:generalInfo,
+      pictureURL: "",
+      relation: req.params["categoryName"]+"/"+req.params["seasonYear"]
+    };
+  
+    res.render('article', {props:props});
+  }else{
+    res.render("notFound");
   }
 
-  let entries = await Database.findEntries(db,categoryName, req.params["seasonYear"]);
-  let teams = [];
-  entries.forEach(x => {
-    if(!teams.includes(x["team"])){
-      teams.push(x["team"]);
-    }
-  });
-
-
-  let sections = [
-    ["Table","Scoring System",scoringSystem, ["Position","Points"],["Text","Text"]],
-    ["Table","Entries",entries,["Team","Driver","Vehicle"],["Text","Text","Text"]],
-    ["Table","Calendar",calendarArray,["Round","Date","Name"],["Text","Text","Link"],"/race/"+req.params["categoryName"]+"/"+req.params["seasonYear"]+"/"],
-    ["Text","Driver's Standings",""],
-    ["Text","Constructor's Standings",""],
-  ];
-
-  let generalInfo = [
-    ["Year", seasonInfo.season_year],
-    ["Season #",""],
-    ["Races",calendarArray.length],
-    ["Drivers",entries.length],
-    ["Teams",teams.length],
-    ["Driver's Champion",""],
-    ["Constructor's Champion",""],
-  ];
-
-  let articleTitle = req.params["seasonYear"]+ " "+categoryName+" Season";
-  let props = {
-    categories:categories,
-    articleTitle: articleTitle,
-    sections:sections, 
-    generalInfo:generalInfo,
-    pictureURL: "",
-    relation: req.params["categoryName"]+"/"+req.params["seasonYear"]
-  };
-
-  res.render('article', {props:props});
 });
 
+//POST methods for Season
 app.post('/season/:categoryName/:seasonYear/scoring',async (req, res) =>{
   
   let position = req.body.positionInput;
@@ -452,6 +497,7 @@ app.post('/season/:categoryName/:seasonYear/entry',async (req, res) =>{
   res.redirect(req.get('referer'));
 });
 
+//Race Page
 app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
 
   let schedule = await Database.findSchedule(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
@@ -460,8 +506,10 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
   let qualifyingResults = await Database.findQualifyingResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
   let raceResults = await Database.findRaceResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
   let pitStops = await Database.findPitStops(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
+  let incidents = await Database.findIncidents(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
   let lastRace;
   let lastQuali;
+
   if(!circuit){
     circuit = {"circuit_name":""};
   }
@@ -511,15 +559,15 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
   });
 
   sections.push(["Table","Pit Stops",pitStops,["Driver","Lap","Pit Time","Total Time","Description"],["Text","Text","Text","Text","Text"]]);
-  sections.push(["Table","Incidents",[],["Drivers Involved","Time","Lap","Description"],["Text","Text","Text","Text"]]);
+  sections.push(["Table","Incidents",incidents,["Drivers Involved","Lap","Description"],["Text","Text","Text"]]);
 
-  let FL = [...lastRace].sort(compareTimes);
+  let FL = lastRace ? [...lastRace].sort(compareTimes) : [];
   let generalInfo = [
     ["Season",req.params["seasonYear"]],
     ["Circuit",circuit.circuit_name],
-    ["Win", lastRace.length == 0 || lastRace == undefined ? "" : lastRace[0].Driver],
-    ["Pole Position",lastQuali.length == 0 || lastQuali == undefined ? "" : lastQuali[0].Driver],
-    ["Fastest Racing Lap", FL.length == 0 || FL == undefined ? "" : FL[0].Driver]
+    ["Win", lastRace == undefined || lastRace.length == 0 ? "" : lastRace[0].Driver],
+    ["Pole Position",lastQuali == undefined || lastQuali.length == 0 ? "" : lastQuali[0].Driver],
+    ["Fastest Racing Lap", FL == undefined || FL.length == 0 ? "" : FL[0].Driver]
   ];
 
   let articleTitle = req.params["raceName"].replace(/_/g, " ");
@@ -537,6 +585,7 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
   res.render('article', {props:props});
 });
 
+//POST Methods for Race
 app.post('/race/:categoryName/:seasonYear/:raceName/schedule',async (req, res) =>{
   
   let sessionType = req.body.sessionTypeInput;
@@ -601,6 +650,17 @@ app.post('/race/:categoryName/:seasonYear/:raceName/PitStop',async (req, res) =>
   let pitDescription = req.body.pitDescriptionInput;
   
   Database.newPitStop(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverName,lapNumber,pitTime,totalTime,pitDescription);
+
+  res.redirect(req.get('referer'));
+});
+
+app.post('/race/:categoryName/:seasonYear/:raceName/incident',async (req, res) =>{
+  
+  let drivers = req.body.DriversInvolvedInput;
+  let lapNumber = req.body.lapNumberInput;
+  let incidentDescription = req.body.incidentDescriptionInput;
+
+  Database.newIncident(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],drivers,lapNumber,incidentDescription);
 
   res.redirect(req.get('referer'));
 });

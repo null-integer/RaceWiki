@@ -1,3 +1,6 @@
+/*
+    JavaScript file to make the race page more interactive
+*/
 
 //Add Point checkboxes to the table
 let tables = document.getElementsByClassName("table table-bordered"); 
@@ -5,6 +8,7 @@ let tableIDs = [];
 let removePointsColumn = [];
 let editable = [];
 
+//Adding checkboxes to point-based sessions
 Array.from(tables[0].children[1].children).forEach(x => {
     
     let pointsButton = document.createElement("input");
@@ -74,3 +78,10 @@ function togglePoints(pointsButton){
     }
 
 }
+
+
+/*
+to listen when user unfocus
+tds[102].addEventListener("focusout", x =>{console.log("OUT")});
+
+*/
