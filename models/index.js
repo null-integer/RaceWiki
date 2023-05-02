@@ -1,13 +1,8 @@
-'use strict'
+const {Sequelize} = require('sequelize');
 
-const Sequelize = require('sequelize');
-const sequalize = new Sequelize({
-    dialect: 'sqlite3',
-    storage: 'user.db'
-});
+const sequelize = new Sequelize('users','username','pwhash',{
+    dialect: 'sqlite',
+    host: './user.sqlite'
+})
 
-const User = sequalize.import("./Users.js");
-
-module.exports={
-    User
-};
+module.exports = sequelize;

@@ -1,22 +1,18 @@
-//const { DataTypes } = require("sequelize");
+const {Model, DataTypes} = require('sequelize');
+const sequelize = require('./index');
 
+class User extends Model{}
 
-module.exports = function(sequalize, DataTypes){
-    return sequalize.define('users',{
-        id:{
-            type: DataTypes.INTEGER,
-            allowNull: true,
-            primaryKey: true,
-            autoIncrement: true
-        },
-        username:{
-            type: DataTypes.TEXT,
-            allowNull: false
-        },
-        pwhash:{
-            type: DataTypes.TEXT,
-            allowNull: false
-        }
-        
-    });
-};
+User.init({
+    username:{
+        type: DataTypes.STRING
+    },
+    pwhash: {
+        type: DataTypes.STRING
+    }
+},{
+    sequelize,
+    modelName: 'user'
+})
+
+module.exports = User;
