@@ -114,6 +114,8 @@ app.post('/newcategory', async (req, res) => {
 });
 
 //Articles
+
+//New Category Page
 app.get('/category/:categoryName', async (req, res) =>{
 
   categoryName = req.params['categoryName'].replace(/_/g, " ");
@@ -125,7 +127,7 @@ app.get('/category/:categoryName', async (req, res) =>{
     let flags = await Database.findFlagsByCategory(db, categoryName);
     let teams = await Database.findTeamsByCategory(db, categoryName);
     let seasons = await Database.findSeasonsByCategory(db,categoryName);
-    seasons.sort((a,b) => parseInt(a.season_year) - parseInt(b.season_year));
+    seasons.sort((a,b) => parseInt(b.season_year) - parseInt(a.season_year));
 
     //Section Data
     //[Type of data in section, Section Title, Section Data, ...OPTIONS]
@@ -153,7 +155,8 @@ app.get('/category/:categoryName', async (req, res) =>{
       sections:sections, 
       generalInfo:generalInfo,
       pictureURL: categoryInfo.category_picture,
-      relation: req.params['categoryName']
+      relation: req.params['categoryName'],
+      additionalScripts: ['/js/category.js']
     }
 
     res.render('article', {props:props});
@@ -230,7 +233,8 @@ app.get('/driver/:driverName', async (req, res) =>{
       sections:sections, 
       generalInfo:generalInfo,
       pictureURL:driverInfo.driver_picture,
-      relation:"/"
+      relation:"/",
+      additionalScripts: ['/js/driver.js']
     };
   
     res.render('article', {props:props});
@@ -302,15 +306,14 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
     let vehicles = await Database.findVehicles(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
   
     let sections = [
-  
-      ["Text","Constructor's Championships", ""],
-      ["Text","Driver's Championships", ""],
       ["Table","Vehicles", vehicles,[],["Link"],"/vehicle/"+req.params["categoryName"]+ "/"+req.params["teamName"]+"/"],
-      ["Text","Drivers", ""],
-      ["Text","Victories", ""],
-      ["Text","Podiums", ""],
-      ["Text","Pole Positions", ""],
-      ["Text","Results" , ""],
+      ["Table","Constructor's Championships", [],[],["Text"]],
+      ["Table","Driver's Championships",  [],[],["Text"]],
+      ["Table","Drivers", [],["Driver","Seasons"],["Text","Text"]],
+      ["Table","Victories", [],["Driver","Race","Season"],["Text","Text","Text"]],
+      ["Table","Podiums", [],["Driver","Race","Season","Place"],["Text","Text","Text","Text"]],
+      ["Table","Pole Positions", [],["Driver","Race","Season"],["Text","Text","Text"]],
+      ["Table","Results" , [],["Driver","Race","Season","Place"],["Text","Text","Text","Text"]],
     ];
   
     let generalInfo = [
@@ -333,7 +336,8 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
       sections:sections, 
       generalInfo:generalInfo,
       pictureURL: teamInfo.team_picture,
-      relation: "/"+req.params["categoryName"]+ "/"+req.params["teamName"]+"/"
+      relation: "/"+req.params["categoryName"]+ "/"+req.params["teamName"]+"/",
+      additionalScripts: ["/js/team.js"],
     };
   
     res.render('article', {props:props});
