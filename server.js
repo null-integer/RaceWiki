@@ -82,13 +82,21 @@ app.post('/signin',(req,res)=>{
   User.findOne({where: {username:username}}).then(user=>{
     if(user){
       bcrypt.compare(pw,user.pwhash,(err,match)=>{
-        if(match){}
+        if(match){
+          res.redirect('/homepage')
+        }
         else{
           errors.push({msg:"Username and password is incorrect"});
           res.render('login',{
             errors:errors
           })
         }
+      })
+    }
+    else{
+      errors.push({msg:'Username and password is incorrect'});
+      res.render('login',{
+        errors:errors
       })
     }
   })
