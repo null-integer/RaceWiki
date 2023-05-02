@@ -1,0 +1,1 @@
+Array.from(document.getElementsByClassName("btn btn-success")).forEach(x => x.remove()); 

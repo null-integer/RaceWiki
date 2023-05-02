@@ -205,12 +205,13 @@ app.get('/driver/:driverName', async (req, res) =>{
   let driverName = req.params["driverName"].replace(/_/g, " "); 
   let driverInfo = await Database.findDriver(db, driverName);
   if(driverInfo){
+
     let sections = [
-      ["Table","Teams","",[]],
-      ["Table","Wins","",[]],
-      ["Table","Podiums","",[]],
-      ["Table","Pole Positions","",[]],
-      ["Table","Results","",[]],
+      ["Table","Teams",[],["Season","Team"],["Text","Text"]],
+      ["Table","Wins",[],["Season","Race","Team"],["Text","Text","Text"]],
+      ["Table","Podiums",[],["Season","Race","Team"],["Text","Text","Text"]],
+      ["Table","Pole Positions",[],["Season","Race","Team"],["Text","Text","Text"]],
+      ["Table","Results",[],["Season","Race","Team"],["Text","Text","Text"]],
     ];
   
     let generalInfo = [
@@ -263,7 +264,6 @@ app.get('/circuit/:circuitName', async (req, res) =>{
       ["City",circuitInfo.circuit_city],
       ["Length",circuitInfo.circuit_length + " Km"],
       ["Turns",turns.length],
-      ["Lap Record",""]
     ];
   
     let articleTitle = req.params["circuitName"].replace(/_/g, " ");
@@ -319,8 +319,6 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
     let generalInfo = [
       ["Team Base", teamInfo.team_base_location],
       ["Drivers",""],
-      ["Chassis",""],
-      ["Engine",""],
       ["Constructor's Championships",""],
       ["Driver's Champsionships",""],
       ["Victories",""],
@@ -369,17 +367,19 @@ app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
   let vehicleInfo = await Database.findVehicle(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "), req.params["vehicleName"].replace(/_/g," "));
 
   if(vehicleInfo){
+    // ["Table","Vehicles", vehicles,[],["Link"],"/vehicle/"+req.params["categoryName"]+ "/"+req.params["teamName"]+"/"],
 
     let sections = [
-      ["Text","Drivers",""],
-      ["Text","Wins",""],
-      ["Text","Podiums",""],
-      ["Text","Pole Positions",""],
-      ["Text","Full Results",""]
+      ["Table","Drivers",[],[],["Text"]],
+      ["Table","Wins",[],["Driver","Race"],["Text","Text"]],
+      ["Table","Podiums",[],["Driver","Race"],["Text","Text"]],
+      ["Table","Pole Positions",[],["Driver","Race"],["Text","Text"]],
+      ["Table","Full Results",[],["Driver","Race"],["Text","Text"]]
     ];
   
     let generalInfo = [
       ["Team",req.params["teamName"].replace(/_/g," ")],
+      ["Season",""],
       ["Engine",vehicleInfo.vehicle_engine],
       ["Power", vehicleInfo.vehicle_power + " HP"],
       ["Weight",vehicleInfo.vehicle_weight + " Kg"],
@@ -387,7 +387,6 @@ app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
       ["Wins",""],
       ["Podiums",""],
       ["Pole Positions",""],
-      ["Fastests Laps",""]
     ];
   
     let articleTitle = vehicleInfo.vehicle_chassis_name;
@@ -396,7 +395,8 @@ app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
       articleTitle: articleTitle,
       sections:sections, 
       generalInfo:generalInfo,
-      pictureURL: vehicleInfo.vehicle_picture
+      pictureURL: vehicleInfo.vehicle_picture,
+      additionalScripts: ['/js/vehicle.js']
     };
   
     res.render('article', {props:props});
@@ -439,13 +439,12 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
       ["Table","Scoring System",scoringSystem, ["Position","Points"],["Text","Text"]],
       ["Table","Entries",entries,["Team","Driver","Vehicle"],["Text","Text","Text"]],
       ["Table","Calendar",calendarArray,["Round","Date","Name"],["Text","Text","Link"],"/race/"+req.params["categoryName"]+"/"+req.params["seasonYear"]+"/"],
-      ["Text","Driver's Standings",""],
-      ["Text","Constructor's Standings",""],
+      ["Table","Driver's Standings",[],["Driver","Points"],["Text","Text"]],
+      ["Table","Constructor's Standings",[],["Team","Points"],["Text","Text"]],
     ];
   
     let generalInfo = [
       ["Year", seasonInfo.season_year],
-      ["Season #",""],
       ["Races",calendarArray.length],
       ["Drivers",entries.length],
       ["Teams",teams.length],
@@ -460,7 +459,8 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
       sections:sections, 
       generalInfo:generalInfo,
       pictureURL: "",
-      relation: req.params["categoryName"]+"/"+req.params["seasonYear"]
+      relation: req.params["categoryName"]+"/"+req.params["seasonYear"],
+      additionalScripts:['/js/season.js']
     };
   
     res.render('article', {props:props});
