@@ -3,8 +3,14 @@ const express = require('express');
 const sqlite3 = require('sqlite3');
 const { open } = require('sqlite');
 const Database = require('./models/Database');
-const User = require('./models/User');
+const {User} = require('./models/User');
+const path = require('path')
+const sequalize = require('./models/index')
 
+sequalize.sync().then(()=>console.log('ready'));
+
+
+console.log(User)
 //Instantiate modules
 const app = express();
 app.set('view engine','ejs');
@@ -14,6 +20,13 @@ app.use(express.urlencoded({extended: false}));
 //Host name and port
 const hostname = '127.0.0.1';
 const port = 3000;
+
+var bodyParser = require('body-parser');
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended:true}));
+
+app.use(express.static(path.join(__dirname,'static')));
+
 
 //connect to the database
 let db;
@@ -76,13 +89,20 @@ app.post('/signin',(req,res)=>{
   let errors = [];
   let username = req.body.username.trim();
   let pw = req.body.password.trim();
+
+  if(req.body.register){
+    res.redirect('/register')
+    return
+  }
   if(username.length==0){
     errors.push({msg:"Please enter username"});
   }
   User.findOne({where: {username:username}}).then(user=>{
     if(user){
       bcrypt.compare(pw,user.pwhash,(err,match)=>{
-        if(match){}
+        if(match){
+          res.redirect('/homepage')
+        }
         else{
           errors.push({msg:"Username and password is incorrect"});
           res.render('login',{
@@ -91,9 +111,49 @@ app.post('/signin',(req,res)=>{
         }
       })
     }
+    else{
+      errors.push({msg:'Username and password is incorrect'});
+      res.render('login',{
+        errors:errors
+      })
+    }
   })
 
 });
+
+//singup page
+app.get('/register',(req,res)=>{
+  res.render('register');
+})
+
+//create user in db
+app.post('/register',(req,res)=>{
+  let errors = [];
+  let username = req.body.username.trim();
+  let pw = req.body.password.trim();
+  if(username.length==0){
+    errors.push({msg:"Please enter username"});
+  }
+  else{
+    User.findOne({where:{username:username}}).then(user=>{
+      if(user){
+        errors.push({msg:'This username is already taken'});
+      }
+      if(pw.length<6){
+        errors.push({msg:"Password must be at least 6 characters"});
+      }
+      if(errors.length == 0){
+        User.create({
+          username: username,
+          pwhash: bcrypt.hashSync(pw,10)
+        }).then(user=>{
+          res.redirect('/homepage')
+        });
+      }
+    })
+  }
+  
+})
 
 //Control Panel 
 app.get('/controlpanel', async (req, res) => {
