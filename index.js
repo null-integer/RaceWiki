@@ -18,7 +18,7 @@ app.use(express.static(`${__dirname}/static`))
 app.use(express.urlencoded({extended: false}));
 
 //Host name and port
-const hostname = '127.0.0.1';
+//const hostname = '127.0.0.1';
 const port = 3000;
 
 var bodyParser = require('body-parser');
@@ -769,6 +769,4 @@ app.post('/togglePoints',async (req, res) =>{
 });
 
 //Start the server
-app.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
+app.listen(port, () => console.log('Server running'));
