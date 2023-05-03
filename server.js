@@ -89,6 +89,11 @@ app.post('/signin',(req,res)=>{
   let errors = [];
   let username = req.body.username.trim();
   let pw = req.body.password.trim();
+
+  if(req.body.register){
+    res.redirect('/register')
+    return
+  }
   if(username.length==0){
     errors.push({msg:"Please enter username"});
   }
