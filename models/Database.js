@@ -282,10 +282,10 @@ class Databse{
       if(!driverID){
         let driverID = await db.run(`INSERT INTO driver (driver_first_name, driver_last_name, driver_number, driver_DOB, driver_nationality, driver_penalty_points, driver_picture) 
                                     VALUES (?,?,0,"","",0,"")`,driverName.split(" ").slice(0,2));
-        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number) VALUES (?,?,"Practice",0,"",?,?)`,[intersection[0],driverID.lastID, driverLapTime,sessionNum]);
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number,points) VALUES (?,?,"Practice",0,"",?,?,0)`,[intersection[0],driverID.lastID, driverLapTime,sessionNum]);
         
       }else{
-        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number) VALUES (?,?,"Practice",0,"",?,?)`,[intersection[0],driverID.driver_ID,driverLapTime,sessionNum]);      
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number,points) VALUES (?,?,"Practice",0,"",?,?,0)`,[intersection[0],driverID.driver_ID,driverLapTime,sessionNum]);      
       }
 
     }
@@ -305,10 +305,10 @@ class Databse{
       if(!driverID){
         let driverID = await db.run(`INSERT INTO driver (driver_first_name, driver_last_name, driver_number, driver_DOB, driver_nationality, driver_penalty_points, driver_picture) 
                                     VALUES (?,?,0,"","",0,"")`,driverName.split(" ").slice(0,2));
-        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number) VALUES (?,?,"Qualifying",0,"",?,?)`,[intersection[0],driverID.lastID, driverLapTime,sessionNum]);
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number,points) VALUES (?,?,"Qualifying",0,"",?,?,0)`,[intersection[0],driverID.lastID, driverLapTime,sessionNum]);
         
       }else{
-        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number) VALUES (?,?,"Qualifying",0,"",?,?)`,[intersection[0],driverID.driver_ID,driverLapTime,sessionNum]);      
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number,points) VALUES (?,?,"Qualifying",0,"",?,?,0)`,[intersection[0],driverID.driver_ID,driverLapTime,sessionNum]);      
       }
 
     }
@@ -328,10 +328,10 @@ class Databse{
       if(!driverID){
         let driverID = await db.run(`INSERT INTO driver (driver_first_name, driver_last_name, driver_number, driver_DOB, driver_nationality, driver_penalty_points, driver_picture) 
                                     VALUES (?,?,0,"","",0,"")`,driverName.split(" ").slice(0,2));
-        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number) VALUES (?,?,"Race",?,"",?,?)`,[intersection[0],driverID.lastID, driverPosition,driverLapTime,sessionNum]);
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number,points) VALUES (?,?,"Race",?,"",?,?,0)`,[intersection[0],driverID.lastID, driverPosition,driverLapTime,sessionNum]);
         
       }else{
-        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number) VALUES (?,?,"Race",?,"",?,?)`,[intersection[0],driverID.driver_ID,driverPosition,driverLapTime,sessionNum]);      
+        await db.run(`INSERT INTO result (raceWeekend_ID, driver_ID, session_type, position, result_comment, lap_time, session_number,points) VALUES (?,?,"Race",?,"",?,?,0)`,[intersection[0],driverID.driver_ID,driverPosition,driverLapTime,sessionNum]);      
       }
 
     }
@@ -402,7 +402,7 @@ class Databse{
       raceIDs = raceIDs.map(x => x.raceWeekend_ID);
       let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
 
-      let result = await db.all(`SELECT driver_first_name, driver_last_name,lap_time, session_number from (SELECT * FROM result NATURAL JOIN driver) WHERE raceWeekend_ID = ? AND session_type = "Practice"`,[intersection[0]]);  
+      let result = await db.all(`SELECT driver_first_name, driver_last_name,lap_time, session_number,points from (SELECT * FROM result NATURAL JOIN driver) WHERE raceWeekend_ID = ? AND session_type = "Practice"`,[intersection[0]]);  
       
       return result; 
     }
@@ -418,7 +418,7 @@ class Databse{
       raceIDs = raceIDs.map(x => x.raceWeekend_ID);
       let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
 
-      let result = await db.all(`SELECT driver_first_name, driver_last_name,lap_time, session_number from (SELECT * FROM result NATURAL JOIN driver) WHERE raceWeekend_ID = ? AND session_type = "Qualifying"`,[intersection[0]]);
+      let result = await db.all(`SELECT driver_first_name, driver_last_name,lap_time, session_number,points from (SELECT * FROM result NATURAL JOIN driver) WHERE raceWeekend_ID = ? AND session_type = "Qualifying"`,[intersection[0]]);
 
       return result;
     
@@ -435,7 +435,7 @@ class Databse{
       raceIDs = raceIDs.map(x => x.raceWeekend_ID);
       let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
 
-      let result = await db.all(`SELECT position, driver_first_name, driver_last_name,lap_time, session_number from (SELECT * FROM result NATURAL JOIN driver) WHERE raceWeekend_ID = ? AND session_type = "Race"`,[intersection[0]]);
+      let result = await db.all(`SELECT position, driver_first_name, driver_last_name,lap_time, session_number,points from (SELECT * FROM result NATURAL JOIN driver) WHERE raceWeekend_ID = ? AND session_type = "Race"`,[intersection[0]]);
 
       return result;
     
@@ -465,6 +465,11 @@ class Databse{
       return result;
     }
 
+    static async findDrivers(db,categoryName){
+      let result = await db.all(`SELECT driver_first_name,driver_last_name FROM (SELECT driver_ID FROM (SELECT season_ID FROM season WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?)) NATURAL JOIN drove) NATURAL JOIN driver`,[categoryName]);
+      return result;
+    }
+
     static async newVehicle(db,categoryName,teamName,engine, chassis, seasonYear, power, weight, url){
       categoryName = categoryName.replace(/_/g, " ");
       teamName = teamName.replace(/_/g, " ");
@@ -486,6 +491,57 @@ class Databse{
 
       let result = await db.get(`SELECT * FROM vehicle WHERE vehicle_chassis_name = ? AND team_ID = (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[vehicleName, teamName, categoryName ]);
       return result;
+    }
+
+    static async updatePoints(db, categoryName,seasonYear,raceName,session,driver, points){
+      let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                        (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+      let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
+      
+      raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+      raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+      let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+      let session_type = session.split(" ")[0];
+      let session_number = session.split(" ")[1];
+      let firstname = driver.split(" ")[0];
+      let lastname = driver.split(" ")[1];
+
+      await db.run(`UPDATE result SET points = ? WHERE raceWeekend_ID = ? AND session_type = ? AND session_number = ? AND driver_ID = (SELECT driver_ID FROM driver WHERE driver_first_name = ? AND driver_last_name = ?)`,[points,intersection[0],session_type,session_number,firstname,lastname]);
+    }
+
+    static async togglePoints(db, categoryName,seasonYear,raceName,session, status){
+      let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                        (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+      let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
+      
+      raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+      raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+      let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+      let session_type = session.split(" ")[0];
+      let session_number = session.split(" ")[1];
+
+      if(session_type == "Practice"){
+
+        let sessions = await db.get(`SELECT practiceSession_ID FROM raceWeekend WHERE raceWeekend_ID = ?`,[intersection[0]]);
+        let id = sessions.practiceSession_ID.split(",")[session_number-1];
+        await db.run(`UPDATE practiceSession SET points = ? WHERE practiceSession_ID = ?`,[status, id]);
+
+      }else if(session_type === "Qualifying"){
+
+        let sessions = await db.get(`SELECT qualifyingSession_ID FROM raceWeekend WHERE raceWeekend_ID = ?`,[intersection[0]]);
+        let id = sessions.qualifyingSession_ID.split(",")[session_number-1];
+        await db.run(`UPDATE qualifyingSession SET points = ? WHERE qualifyingSession_ID = ?`,[status, id]);
+
+      }else{
+
+        let sessions = await db.get(`SELECT race_ID FROM raceWeekend WHERE raceWeekend_ID = ?`,[intersection[0]]);
+        let id = sessions.race_ID.split(",")[session_number-1];
+        await db.run(`UPDATE race SET points = ? WHERE race_ID = ?`,[status, id]);
+
+      }
+
     }
 
 }

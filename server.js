@@ -24,7 +24,7 @@ const port = 3000;
 var bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
-
+// let jsonURL = parseUrl.json();
 app.use(express.static(path.join(__dirname,'static')));
 
 
@@ -187,7 +187,18 @@ app.get('/category/:categoryName', async (req, res) =>{
     let flags = await Database.findFlagsByCategory(db, categoryName);
     let teams = await Database.findTeamsByCategory(db, categoryName);
     let seasons = await Database.findSeasonsByCategory(db,categoryName);
+    let drivers = await Database.findDrivers(db,categoryName);
     seasons.sort((a,b) => parseInt(b.season_year) - parseInt(a.season_year));
+    drivers.sort((a,b) => {
+      if(a.driver_first_name < b.driver_first_name){
+        return -1;
+      }else if(a.driver_first_name > b.driver_first_name){
+        return 1;
+      }else{
+        return 0;
+      }
+    })
+    drivers = drivers.map(x => function() {return{"name" : x.driver_first_name + " " + x.driver_last_name}}());
 
     //Section Data
     //[Type of data in section, Section Title, Section Data, ...OPTIONS]
@@ -197,7 +208,7 @@ app.get('/category/:categoryName', async (req, res) =>{
       ["Text", "Rules", categoryInfo.category_rules],
       ["Table","Championships",seasons,["Season Year"],["Link"],"/season/"+req.params["categoryName"]+"/"],
       ["Table","Teams",teams,[],["Link"], "/team/"+req.params["categoryName"]+"/"],
-      ["Table","Drivers",[],["Driver Name"],["Text"]],
+      ["Table","Drivers",drivers,[],["Link"],"/driver/"],
       ["Table","Flags", flags, ["Icon", "Name", "Meaning"], ["Image","Text","Text"]]
     ];
   
@@ -591,11 +602,11 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
     if(x.sessionType == "Practice" || x.sessionType == "Qualifying"){
       sessionTable = sessionTable.map(y => function(){
         if(x.sessionNum == y.session_number){
-          return {"Driver":y.driver_first_name + " "+y.driver_last_name, "Lap Time": y.lap_time};
+          return {"Driver":y.driver_first_name + " "+y.driver_last_name, "Lap Time": y.lap_time, "Points":y.points};
         }
       }());
       sessionTable.sort(compareTimes);
-      sessionTable = sessionTable.map((z,index) => function(){return {"Position":index+1, "Driver":z["Driver"], "Lap Time": z["Lap Time"]}}() );
+      sessionTable = sessionTable.map((z,index) => function(){return {"Position":index+1, "Driver":z["Driver"], "Lap Time": z["Lap Time"], "Points":z["Points"]}}() );
       sections.push(["Table",x.sessionType +" "+x.sessionNum+" Results",sessionTable,["Position","Driver","Lap Time","Points"],["Text","Link","Text","Text"],"/driver/"]);
       if(x.sessionType == "Qualifying"){
         if(!lastQuali){
@@ -607,7 +618,7 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
     }else{
       sessionTable = sessionTable.map(y => function(){
         if(x.sessionNum == y.session_number){
-          return {"Position":y.position,"Driver":y.driver_first_name + " "+y.driver_last_name, "Lap Time": y.lap_time};
+          return {"Position":y.position,"Driver":y.driver_first_name + " "+y.driver_last_name, "Lap Time": y.lap_time , "Points":y.points};
         }
       }());
       sessionTable.sort((a,b) => { return parseInt(a["Position"]) - parseInt(b["Position"])});
@@ -727,6 +738,34 @@ app.post('/race/:categoryName/:seasonYear/:raceName/incident',async (req, res) =
   Database.newIncident(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],drivers,lapNumber,incidentDescription);
 
   res.redirect(req.get('referer'));
+});
+
+app.post('/updatePoints',async (req, res) =>{
+
+  try{
+
+    Database.updatePoints(db, req.body.category, req.body.season, req.body.race, req.body.session, req.body.driver, req.body.points);
+    res.json({status:200});
+
+  }catch(error){
+	  res.json({status:400});
+
+  }
+
+});
+
+app.post('/togglePoints',async (req, res) =>{
+
+  try{
+
+    Database.togglePoints(db, req.body.category, req.body.season, req.body.race, req.body.session, req.body.status);
+    res.json({status:200});
+
+  }catch(error){
+	  res.json({status:400});
+
+  }
+
 });
 
 //Start the server
