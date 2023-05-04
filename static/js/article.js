@@ -442,7 +442,3 @@ function showForm(buttonID,relation){
     document.getElementById("NewFormDiv").style.display = "block";
     populateForm(buttonID,relation);
 }
-
-function EditText(pID){
-    document.getElementById(pID).setAttribute("contenteditable","true");
-}

@@ -89,6 +89,9 @@ class Databse{
     }
     static async newFlag(db, categoryName, flagName,flagIcon, flagMeaning){
       categoryName = categoryName.replace(/_/g, " ");
+      flagName = flagName.trim();
+      flagIcon = flagIcon.trim();
+      flagMeaning = flagMeaning.trim();
 
       let result = await db.get("SELECT * FROM flag WHERE flag_name = ? AND flag_icon = ? AND flag_meaning = ?",[flagName,flagIcon, flagMeaning]);
       
@@ -627,6 +630,49 @@ class Databse{
       await db.run(`UPDATE driver SET driver_picture = ? WHERE driver_first_name = ? AND driver_last_name = ?`,[imageURLInput, driverName.split(" ")[0], driverName.split(" ")[1]]);
     }
 
+    static async updateDriverInfo(db, driverName, updatedField, updatedInfo){
+      driverName = driverName.replace(/_/g, " ");
+      let att = {0:"driver_DOB",1:"driver_number",2:"driver_nationality",3:"driver_penalty_points"};
+      await db.run(`UPDATE driver SET ${att[updatedField]} = ? WHERE driver_first_name = ? AND driver_last_name = ?`,[updatedInfo,driverName.split(" ")[0],driverName.split(" ")[1]]);
+
+    }
+
+    static async updateCircuitInfo(db, circuitName, updatedField, updatedInfo){
+      circuitName = circuitName.replace(/_/g, " ");
+      let att = {0:"circuit_country",1:"circuit_city",2:"circuit_length"};
+      if(updatedField == 2){
+        updatedInfo = updatedInfo.replace(/ Km/g,"")
+      }
+      await db.run(`UPDATE circuit SET ${att[updatedField]} = ? WHERE circuit_name = ?`,[updatedInfo,circuitName]);
+
+    }
+
+    static async updateTeamInfo(db, categoryName,teamName, updatedField, updatedInfo){
+      categoryName = categoryName.replace(/_/g, " ");
+      teamName = teamName.replace(/_/g, " ");
+      let att = {0:"team_base_location"};
+      
+      await db.run(`UPDATE team SET ${att[updatedField]} = ? WHERE team_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)`,[updatedInfo,teamName, categoryName]);
+
+    }
+
+    static async updateVehicleInfo(db, categoryName,teamName,vehicleName, updatedField, updatedInfo){
+      categoryName = categoryName.replace(/_/g, " ");
+      teamName = teamName.replace(/_/g, " ");
+      vehicleName = vehicleName.replace(/_/g, " ");
+      let att = {2:"vehicle_engine",3:"vehicle_power",4:"vehicle_weight"};
+
+      if(updatedField == 4){
+        updatedInfo = updatedInfo.replace(/ Kg/g,"")
+      }
+      if(updatedField == 3){
+        updatedInfo = updatedInfo.replace(/ HP/g,"")
+      }
+
+      await db.run(`UPDATE vehicle SET ${att[updatedField]} = ? WHERE vehicle_chassis_name = ? AND team_ID = (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[updatedInfo,vehicleName,teamName, categoryName]);
+
+    }
+
     static async updateTeamImage(db,categoryName, teamName, imageURLInput){
 
       categoryName = categoryName.replace(/_/g, " ");
@@ -663,6 +709,16 @@ class Databse{
 
       await db.run(`UPDATE raceWeekend SET race_picture = ? WHERE raceWeekend_ID = ?`,[imageURLInput, intersection[0]]);
 
+    }
+
+    static async updateCategoryRules(db,categoryName,updatedRules){
+      categoryName = categoryName.replace(/_/g, " ");
+      await db.run(`UPDATE category SET category_rules = ? WHERE category_name = ?`,[updatedRules,categoryName]);
+    }
+
+    static async updateCategoryDescription(db,categoryName,updatedDescription){
+      categoryName = categoryName.replace(/_/g, " ");
+      await db.run(`UPDATE category SET category_description = ? WHERE category_name = ?`,[updatedDescription,categoryName]);
     }
     
 }

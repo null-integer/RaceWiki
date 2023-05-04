@@ -295,6 +295,29 @@ app.post('/category/:categoryName/image',async (req, res) =>{
   res.redirect(req.get('referer'));
 });
 
+//Update the category rules
+app.post('/category/:categoryName/rules',async (req, res) =>{
+  
+  try{
+    Database.updateCategoryRules(db,req.params["categoryName"],req.body.updatedRules.trim());
+    res.json({status:200});
+
+  }catch(error){
+	  res.json({status:400});
+  }
+});
+
+//Update the category description
+app.post('/category/:categoryName/description',async (req, res) =>{
+  
+  try{
+    Database.updateCategoryDescription(db,req.params["categoryName"],req.body.updatedDescription.trim());
+    res.json({status:200});
+
+  }catch(error){
+	  res.json({status:400});
+  }
+});
 
 //Driver Page
 app.get('/driver/:driverName', async (req, res) =>{
@@ -313,11 +336,11 @@ app.get('/driver/:driverName', async (req, res) =>{
     ];
   
     let generalInfo = [
-      ["Date of Birth",driverInfo.driver_DOB],
-      ["Number",driverInfo.driver_number],
-      ["Nationality",driverInfo.driver_nationality],
+      ["Date of Birth",driverInfo.driver_DOB.length == 0 ? "?" : driverInfo.driver_DOB],
+      ["Number",driverInfo.driver_number.length == 0 ? "?" : driverInfo.driver_number],
+      ["Nationality",driverInfo.driver_nationality.length == 0 ? "?" : driverInfo.driver_nationality],
+      ["Penalty Points",driverInfo.driver_penalty_points.length == 0 ? "?" : driverInfo.driver_penalty_points],
       ["Championships",""],
-      ["Penalty Points",driverInfo.driver_penalty_points],
       ["Wins",""],
       ["Podiums",""],
       ["Pole Positions",""],
@@ -354,6 +377,17 @@ app.post('/driver/:driverName/image',async (req, res) =>{
   res.redirect(req.get('referer'));
 });
 
+app.post('/driver/:driverName/generalInfo',async (req, res) =>{
+  
+  try{
+    Database.updateDriverInfo(db, req.params["driverName"], req.body.updatedField, req.body.updatedInfo.trim() );
+    res.json({status:200});
+
+  }catch(error){
+	  res.json({status:400});
+  }
+});
+
 //Circuit Page
 app.get('/circuit/:circuitName', async (req, res) =>{
 
@@ -369,9 +403,9 @@ app.get('/circuit/:circuitName', async (req, res) =>{
     ];
   
     let generalInfo = [
-      ["Country",circuitInfo.circuit_country],
-      ["City",circuitInfo.circuit_city],
-      ["Length",circuitInfo.circuit_length + " Km"],
+      ["Country",circuitInfo.circuit_country.length == 0 ? "?" : circuitInfo.circuit_country],
+      ["City",circuitInfo.circuit_city.length == 0 ? "?" : circuitInfo.circuit_city],
+      ["Length",circuitInfo.circuit_length.length == 0 ? "?" : circuitInfo.circuit_length + " Km"],
       ["Turns",turns.length],
     ];
   
@@ -416,7 +450,17 @@ app.post('/circuit/:circuitName/image',async (req, res) =>{
   res.redirect(req.get('referer'));
 });
 
+//Update circuit general info
+app.post('/circuit/:circuitName/generalInfo',async (req, res) =>{
+  
+  try{
+    Database.updateCircuitInfo(db, req.params["circuitName"], req.body.updatedField, req.body.updatedInfo.trim() );
+    res.json({status:200});
 
+  }catch(error){
+	  res.json({status:400});
+  }
+});
 
 //Team Page
 app.get('/team/:categoryName/:teamName', async (req, res) =>{
@@ -493,6 +537,18 @@ app.post('/:categoryName/:teamName/image',async (req, res) =>{
   res.redirect(req.get('referer'));
 });
 
+//update team general info
+app.post('/team/:categoryName/:teamName/generalInfo',async (req, res) =>{
+  
+  try{
+    Database.updateTeamInfo(db, req.params["categoryName"],req.params["teamName"], req.body.updatedField, req.body.updatedInfo.trim() );
+    res.json({status:200});
+
+  }catch(error){
+	  res.json({status:400});
+  }
+});
+
 
 //Vehicle Page
 app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
@@ -546,6 +602,19 @@ app.post('/vehicle/:categoryName/:teamName/:vehicleName/image',async (req, res) 
   Database.updateVehicleImage(db,req.params["categoryName"],req.params["teamName"],req.params["vehicleName"],req.body.imageURLInput.trim());
   
   res.redirect(req.get('referer'));
+});
+
+//Update the vehicle info
+app.post('/vehicle/:categoryName/:teamName/:vehicleName/generalInfo',async (req, res) =>{
+  
+  try{
+    Database.updateVehicleInfo(db, req.params["categoryName"],req.params["teamName"],req.params["vehicleName"], req.body.updatedField, req.body.updatedInfo.trim() );
+    res.json({status:200});
+
+  }catch(error){
+	  res.json({status:400});
+  }
+
 });
 
 //Season Page
@@ -892,20 +961,13 @@ app.listen(port, () => console.log('Server running'));
 /*
   TODO:
     category:
-      update description/rules string
-      update flag content
       calculate the drivers and constructors for the latest season
 
     driver:
-     update dob, number, nationality, penalty points
      calculate teams,wins,podiums,pole positions, results
      In podiums and results mark as gold, silver, or bronze
-
-    circuit:
-      update Country,City, length
     
     team:
-      Update Team Base
       calculate teams,drivers,podiums,pole positions, results, champs
 
     season:
@@ -913,7 +975,6 @@ app.listen(port, () => console.log('Server running'));
 
     vehicle:
       calculate drivers, wins, podiums, pole, full result
-      update engine, power, weight, 
 
     main:
       calculate standings for current season

@@ -37,6 +37,7 @@ aside .card-title {
 
 aside .card-text {
   line-height: 1.4;
+  display: inline-block;
 }
 
 /* Style the topic title */
