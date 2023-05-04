@@ -3,19 +3,20 @@ const express = require('express');
 const sqlite3 = require('sqlite3');
 const { open } = require('sqlite');
 const Database = require('./models/Database');
-const {User} = require('./models/User');
+const User = require('./models/User');
 const path = require('path')
-const sequalize = require('./models/index')
+const sequalize = require('./models/model')
+const bcrypt = require('bcrypt');
 
 sequalize.sync().then(()=>console.log('ready'));
 
 
-console.log(User)
 //Instantiate modules
 const app = express();
 app.set('view engine','ejs');
 app.use(express.static(`${__dirname}/static`))
 app.use(express.urlencoded({extended: false}));
+app.use(express.json());
 
 //Host name and port
 const hostname = '127.0.0.1';
@@ -71,6 +72,11 @@ function compareTimes(a,b){
   }
 }
 
+app.get('/users', async (req,res)=>{
+  const users = await User.findAll();
+  res.send(users)
+})
+
 //Main Homepage
 app.get('/', async (req, res) => {
   
@@ -90,35 +96,42 @@ app.post('/signin',(req,res)=>{
   let username = req.body.username.trim();
   let pw = req.body.password.trim();
 
+  console.log(pw)
+
+  console.log(req.body.register)
+
   if(req.body.register){
     res.redirect('/register')
-    return
+    return;
   }
-  if(username.length==0){
-    errors.push({msg:"Please enter username"});
+  else{
+    if(username.length==0){
+      errors.push({msg:"Please enter username"});
+    }
+    User.findOne({where: {username:username}}).then(user=>{
+      if(user){
+        bcrypt.compare(pw,user.pwhash,(err,match)=>{
+          if(match){
+            res.redirect('/')
+          }
+          else{
+            errors.push({msg:"Username and password is incorrect"});
+            res.render('signin',{
+              errors:errors
+            })
+          }
+        })
+      }
+      else{
+        errors.push({msg:'Username and password is incorrect'});
+        res.render('signin',{
+          errors:errors
+        })
+      }
+    })
+  
   }
-  User.findOne({where: {username:username}}).then(user=>{
-    if(user){
-      bcrypt.compare(pw,user.pwhash,(err,match)=>{
-        if(match){
-          res.redirect('/homepage')
-        }
-        else{
-          errors.push({msg:"Username and password is incorrect"});
-          res.render('login',{
-            errors:errors
-          })
-        }
-      })
-    }
-    else{
-      errors.push({msg:'Username and password is incorrect'});
-      res.render('login',{
-        errors:errors
-      })
-    }
-  })
-
+  
 });
 
 //singup page
@@ -147,7 +160,7 @@ app.post('/register',(req,res)=>{
           username: username,
           pwhash: bcrypt.hashSync(pw,10)
         }).then(user=>{
-          res.redirect('/homepage')
+          res.redirect('/signin')
         });
       }
     })
