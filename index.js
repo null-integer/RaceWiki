@@ -288,6 +288,14 @@ app.post('/category/:categoryName/flag',async (req, res) =>{
   res.redirect(req.get('referer'));
 });
 
+//Update the category image
+app.post('/category/:categoryName/image',async (req, res) =>{
+  
+  Database.updateCategoryImage(db,req.params["categoryName"],req.body.imageURLInput.trim());
+  res.redirect(req.get('referer'));
+});
+
+
 //Driver Page
 app.get('/driver/:driverName', async (req, res) =>{
 
@@ -336,7 +344,15 @@ app.get('/driver/:driverName', async (req, res) =>{
 
 });
 
-//All Results for drivers are calculated so no POST methods
+//POST Methods for Driver page
+
+//Update the category image
+app.post('/driver/:driverName/image',async (req, res) =>{
+  
+  Database.updateDriverImage(db,req.params["driverName"],req.body.imageURLInput.trim());
+ 
+  res.redirect(req.get('referer'));
+});
 
 //Circuit Page
 app.get('/circuit/:circuitName', async (req, res) =>{
@@ -367,7 +383,8 @@ app.get('/circuit/:circuitName', async (req, res) =>{
       sections:sections, 
       generalInfo:generalInfo,
       relation: "/circuit/"+req.params["circuitName"]+"/",
-      pictureURL: circuitInfo.circuit_picture
+      pictureURL: circuitInfo.circuit_picture,
+      additionalScripts: ["/js/circuit.js"]
     };
   
     res.render('article', {props:props});
@@ -390,6 +407,15 @@ app.post('/circuit/:circuitName/turn',async (req, res) =>{
 
   res.redirect(req.get('referer'));
 });
+
+//Update the category image
+app.post('/circuit/:circuitName/image',async (req, res) =>{
+  
+  Database.updateCircuitImage(db, req.params.circuitName, req.body.imageURLInput.trim());
+  
+  res.redirect(req.get('referer'));
+});
+
 
 
 //Team Page
@@ -459,6 +485,14 @@ app.post('/:categoryName/:teamName/vehicle',async (req, res) =>{
   res.redirect(req.get('referer'));
 });
 
+//Update the category image
+app.post('/:categoryName/:teamName/image',async (req, res) =>{
+  
+  Database.updateTeamImage(db,req.params.categoryName,req.params.teamName,req.body.imageURLInput.trim())
+  
+  res.redirect(req.get('referer'));
+});
+
 
 //Vehicle Page
 app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
@@ -504,7 +538,15 @@ app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
 
 });
 
-//All Results for vehicles are calculated so no POST methods
+//POST methods for Vehicle page
+
+//Update the vehicle image
+app.post('/vehicle/:categoryName/:teamName/:vehicleName/image',async (req, res) =>{
+
+  Database.updateVehicleImage(db,req.params["categoryName"],req.params["teamName"],req.params["vehicleName"],req.body.imageURLInput.trim());
+  
+  res.redirect(req.get('referer'));
+});
 
 //Season Page
 app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
@@ -559,7 +601,7 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
       articleTitle: articleTitle,
       sections:sections, 
       generalInfo:generalInfo,
-      pictureURL: "",
+      pictureURL: seasonInfo.season_picture,
       relation: req.params["categoryName"]+"/"+req.params["seasonYear"],
       additionalScripts:['/js/season.js']
     };
@@ -607,92 +649,108 @@ app.post('/season/:categoryName/:seasonYear/entry',async (req, res) =>{
   res.redirect(req.get('referer'));
 });
 
+//Update the season image
+app.post('/season/:categoryName/:seasonYear/image',async (req, res) =>{
+
+  Database.updateSeasonImage(db,req.params["categoryName"],req.params["seasonYear"],req.body.imageURLInput.trim());
+  
+  res.redirect(req.get('referer'));
+});
+
 //Race Page
 app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
 
-  let schedule = await Database.findSchedule(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
-  let circuit = await Database.findCircuit(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
-  let practiceResults = await Database.findPracticeResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
-  let qualifyingResults = await Database.findQualifyingResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
-  let raceResults = await Database.findRaceResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
-  let pitStops = await Database.findPitStops(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
-  let incidents = await Database.findIncidents(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
-  let lastRace;
-  let lastQuali;
 
-  if(!circuit){
-    circuit = {"circuit_name":""};
+  let race = await Database.findRace(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
+
+  if(race){
+    let schedule = await Database.findSchedule(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
+    let circuit = await Database.findCircuit(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
+    let practiceResults = await Database.findPracticeResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
+    let qualifyingResults = await Database.findQualifyingResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
+    let raceResults = await Database.findRaceResults(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
+    let pitStops = await Database.findPitStops(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
+    let incidents = await Database.findIncidents(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"]);
+    let lastRace;
+    let lastQuali;
+  
+    if(!circuit){
+      circuit = {"circuit_name":""};
+    }
+  
+    let sections = [
+      ["Table", "Schedule",schedule,["Session","Session #","Date","Time","Weather","Points"],["Text","Text","Text","Text","Text","Text"]],
+      ["Table", "Circuit",[{"name":circuit.circuit_name}],[],["Link"],"/circuit/"],
+    ];
+  
+    let table = {"Practice":practiceResults, "Qualifying":qualifyingResults, "Race":raceResults};
+    schedule.forEach(x=>{
+  
+      let sessionTable = table[x.sessionType].filter(y => x.sessionNum == y.session_number);
+  
+      if(x.sessionType == "Practice" || x.sessionType == "Qualifying"){
+        sessionTable = sessionTable.map(y => function(){
+          if(x.sessionNum == y.session_number){
+            return {"Driver":y.driver_first_name + " "+y.driver_last_name, "Lap Time": y.lap_time, "Points":y.points};
+          }
+        }());
+        sessionTable.sort(compareTimes);
+        sessionTable = sessionTable.map((z,index) => function(){return {"Position":index+1, "Driver":z["Driver"], "Lap Time": z["Lap Time"], "Points":z["Points"]}}() );
+        sections.push(["Table",x.sessionType +" "+x.sessionNum+" Results",sessionTable,["Position","Driver","Lap Time","Points"],["Text","Link","Text","Text"],"/driver/"]);
+        if(x.sessionType == "Qualifying"){
+          if(!lastQuali){
+            lastQuali = sessionTable;
+          }else{
+            lastQuali = sessionTable;
+          }
+        }
+      }else{
+        sessionTable = sessionTable.map(y => function(){
+          if(x.sessionNum == y.session_number){
+            return {"Position":y.position,"Driver":y.driver_first_name + " "+y.driver_last_name, "Lap Time": y.lap_time , "Points":y.points};
+          }
+        }());
+        sessionTable.sort((a,b) => { return parseInt(a["Position"]) - parseInt(b["Position"])});
+  
+        sections.push(["Table",x.sessionType +" "+x.sessionNum+" Results",sessionTable,["Position","Driver","Fastest Lap Time","Points"],["Text","Link","Text","Text"],"/driver/"]);
+        if(!lastRace){
+          lastRace = sessionTable;
+        }else{
+          lastRace = sessionTable;
+        }
+      }
+        
+    });
+  
+    sections.push(["Table","Pit Stops",pitStops,["Driver","Lap","Pit Time","Total Time","Description"],["Link","Text","Text","Text","Text"],"/driver/"]);
+    sections.push(["Table","Incidents",incidents,["Drivers Involved","Lap","Description"],["Text","Text","Text"]]);
+  
+    let FL = lastRace ? [...lastRace].sort(compareTimes) : [];
+    let generalInfo = [
+      ["Season",req.params["seasonYear"]],
+      ["Circuit",circuit.circuit_name],
+      ["Win", lastRace == undefined || lastRace.length == 0 ? "" : lastRace[0].Driver],
+      ["Pole Position",lastQuali == undefined || lastQuali.length == 0 ? "" : lastQuali[0].Driver],
+      ["Fastest Racing Lap", FL == undefined || FL.length == 0 ? "" : FL[0].Driver]
+    ];
+  
+    let articleTitle = req.params["raceName"].replace(/_/g, " ");
+  
+    let props = {
+      categories:categories,
+      articleTitle: articleTitle,
+      sections:sections, 
+      generalInfo:generalInfo,
+      pictureURL: race.race_picture,
+      relation: req.params["categoryName"] + "/"+req.params["seasonYear"]+"/"+req.params["raceName"],
+      additionalScripts: ["/js/results.js"]
+    };
+  
+    res.render('article', {props:props});
+  }else{
+    res.render("notFound");
   }
 
-  let sections = [
-    ["Table", "Schedule",schedule,["Session","Session #","Date","Time","Weather","Points"],["Text","Text","Text","Text","Text","Text"]],
-    ["Table", "Circuit",[{"name":circuit.circuit_name}],[],["Link"],"/circuit/"],
-  ];
-
-  let table = {"Practice":practiceResults, "Qualifying":qualifyingResults, "Race":raceResults};
-  schedule.forEach(x=>{
-
-    let sessionTable = table[x.sessionType].filter(y => x.sessionNum == y.session_number);
-
-    if(x.sessionType == "Practice" || x.sessionType == "Qualifying"){
-      sessionTable = sessionTable.map(y => function(){
-        if(x.sessionNum == y.session_number){
-          return {"Driver":y.driver_first_name + " "+y.driver_last_name, "Lap Time": y.lap_time, "Points":y.points};
-        }
-      }());
-      sessionTable.sort(compareTimes);
-      sessionTable = sessionTable.map((z,index) => function(){return {"Position":index+1, "Driver":z["Driver"], "Lap Time": z["Lap Time"], "Points":z["Points"]}}() );
-      sections.push(["Table",x.sessionType +" "+x.sessionNum+" Results",sessionTable,["Position","Driver","Lap Time","Points"],["Text","Link","Text","Text"],"/driver/"]);
-      if(x.sessionType == "Qualifying"){
-        if(!lastQuali){
-          lastQuali = sessionTable;
-        }else{
-          lastQuali = sessionTable;
-        }
-      }
-    }else{
-      sessionTable = sessionTable.map(y => function(){
-        if(x.sessionNum == y.session_number){
-          return {"Position":y.position,"Driver":y.driver_first_name + " "+y.driver_last_name, "Lap Time": y.lap_time , "Points":y.points};
-        }
-      }());
-      sessionTable.sort((a,b) => { return parseInt(a["Position"]) - parseInt(b["Position"])});
-
-      sections.push(["Table",x.sessionType +" "+x.sessionNum+" Results",sessionTable,["Position","Driver","Fastest Lap Time","Points"],["Text","Link","Text","Text"],"/driver/"]);
-      if(!lastRace){
-        lastRace = sessionTable;
-      }else{
-        lastRace = sessionTable;
-      }
-    }
-      
-  });
-
-  sections.push(["Table","Pit Stops",pitStops,["Driver","Lap","Pit Time","Total Time","Description"],["Link","Text","Text","Text","Text"],"/driver/"]);
-  sections.push(["Table","Incidents",incidents,["Drivers Involved","Lap","Description"],["Text","Text","Text"]]);
-
-  let FL = lastRace ? [...lastRace].sort(compareTimes) : [];
-  let generalInfo = [
-    ["Season",req.params["seasonYear"]],
-    ["Circuit",circuit.circuit_name],
-    ["Win", lastRace == undefined || lastRace.length == 0 ? "" : lastRace[0].Driver],
-    ["Pole Position",lastQuali == undefined || lastQuali.length == 0 ? "" : lastQuali[0].Driver],
-    ["Fastest Racing Lap", FL == undefined || FL.length == 0 ? "" : FL[0].Driver]
-  ];
-
-  let articleTitle = req.params["raceName"].replace(/_/g, " ");
-
-  let props = {
-    categories:categories,
-    articleTitle: articleTitle,
-    sections:sections, 
-    generalInfo:generalInfo,
-    pictureURL: "",
-    relation: req.params["categoryName"] + "/"+req.params["seasonYear"]+"/"+req.params["raceName"],
-    additionalScripts: ["/js/results.js"]
-  };
-
-  res.render('article', {props:props});
 });
 
 //POST Methods for Race
@@ -787,6 +845,17 @@ app.post('/race/:categoryName/:seasonYear/:raceName/incident',async (req, res) =
   res.redirect(req.get('referer'));
 });
 
+//Update race image
+app.post('/race/:categoryName/:seasonYear/:raceName/image',async (req, res) =>{
+
+
+  Database.updateRaceImage(db,req.params["categoryName"],req.params["seasonYear"],req.params["raceName"], req.body.imageURLInput.trim());
+
+  res.redirect(req.get('referer'));
+
+});
+
+
 //Update session points
 app.post('/updatePoints',async (req, res) =>{
 
@@ -826,29 +895,23 @@ app.listen(port, () => console.log('Server running'));
       update description/rules string
       update flag content
       calculate the drivers and constructors for the latest season
-      on double click update the category image
 
     driver:
-     on double click update driver image
      update dob, number, nationality, penalty points
      calculate teams,wins,podiums,pole positions, results
      In podiums and results mark as gold, silver, or bronze
 
     circuit:
-      on double click update circuit image
       update Country,City, length
     
     team:
       Update Team Base
-      ondouble click update image
       calculate teams,drivers,podiums,pole positions, results, champs
 
     season:
-      ondouble click update image 
       calculate championships
 
     vehicle:
-      ondouble click update image
       calculate drivers, wins, podiums, pole, full result
       update engine, power, weight, 
 

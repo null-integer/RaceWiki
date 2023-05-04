@@ -346,6 +346,77 @@ function populateForm(buttonID,relation){
             addLabelAndTextArea(form,"Incident Description","incidentDescriptionInput",10,"");
         break;
 
+        case "updateCategoryImage":
+            //Form Title
+            formTitle.innerHTML = "Update Category Image";
+            form.appendChild(formTitle);
+            form.action = "/category/"+relation+"/image";
+
+            addLabelAndText(form,"New Image URL:","imageURLInput");
+
+        break;
+
+        case "updateCircuitImage":
+            //Form Title
+            formTitle.innerHTML = "Update Circuit Image";
+            form.appendChild(formTitle);
+            form.action = "/circuit/"+relation+"/image";
+
+            addLabelAndText(form,"New Image URL:","imageURLInput");
+
+        break;        
+        
+        case "updateDriverImage":
+            //Form Title
+            formTitle.innerHTML = "Update Driver Image";
+            form.appendChild(formTitle);
+            form.action = "/driver/"+relation+"/image";
+
+            addLabelAndText(form,"New Image URL:","imageURLInput");
+
+        break;        
+        
+        case "updateTeamImage":
+            //Form Title
+            formTitle.innerHTML = "Update Team Image";
+            form.appendChild(formTitle);
+            form.action = "/"+relation+"/image";
+
+            addLabelAndText(form,"New Image URL:","imageURLInput");
+
+        break;
+
+        case "updateVehicleImage":
+            //Form Title
+            formTitle.innerHTML = "Update Vehicle Image";
+            form.appendChild(formTitle);
+            form.action = "/vehicle/"+relation+"/image";
+
+            addLabelAndText(form,"New Image URL:","imageURLInput");
+
+        break;
+
+        case "updateSeasonImage":
+            //Form Title
+            formTitle.innerHTML = "Update Season Image";
+            form.appendChild(formTitle);
+            form.action = "/"+relation+"/image";
+            
+            addLabelAndText(form,"New Image URL:","imageURLInput");
+
+        break;
+
+
+        case "updateRaceImage":
+            //Form Title
+            formTitle.innerHTML = "Update Race Image";
+            form.appendChild(formTitle);
+            form.action = "/race/"+relation+"/image";
+            
+            addLabelAndText(form,"New Image URL:","imageURLInput");
+
+        break;
+
         default:
           
     } 

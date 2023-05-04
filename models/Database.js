@@ -38,7 +38,7 @@ class Databse{
 
     static async findSeasonsByCategory(db, categoryName){
       categoryName = categoryName.replace(/_/g, " ");
-      let result = await db.all(`SELECT season_year FROM season WHERE category_ID = 
+      let result = await db.all(`SELECT season_year, season_picture FROM season WHERE category_ID = 
       (SELECT category_ID FROM category WHERE category_name = ?)`,[categoryName]);
       for(let row of result){
         row.season_year = row.season_year + "";
@@ -221,6 +221,21 @@ class Databse{
 
         await db.run(`UPDATE raceWeekend SET race_ID = ? WHERE raceWeekend_ID = ?`,[newSessionString,intersection[0]]);
       }
+    }
+
+    static async findRace(db,categoryName,seasonYear,raceName){
+      categoryName = categoryName.replace(/_/g, " ");
+      let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                        (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+      let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
+      
+      raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+      raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+      let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+      let result = await db.get(`SELECT race_name,race_picture FROM raceWeekend WHERE raceWeekend_ID = ?`,[intersection[0]]);
+      return result;
+      
     }
 
     static async findSchedule(db,categoryName,seasonYear,raceName){
@@ -597,6 +612,59 @@ class Databse{
 
     }
 
+    static async updateCategoryImage(db,categoryName,imageURLInput){
+      categoryName = categoryName.replace(/_/g, " ");
+      await db.run(`UPDATE category SET category_picture = ? WHERE category_name = ?`,[imageURLInput,categoryName]);
+    }    
+    
+    static async updateCircuitImage(db,circuitName,imageURLInput){
+      circuitName = circuitName.replace(/_/g, " ");
+      await db.run(`UPDATE circuit SET circuit_picture = ? WHERE circuit_name = ?`,[imageURLInput,circuitName]);
+    }
+
+    static async updateDriverImage(db,driverName,imageURLInput){
+      driverName = driverName.replace(/_/g, " ");
+      await db.run(`UPDATE driver SET driver_picture = ? WHERE driver_first_name = ? AND driver_last_name = ?`,[imageURLInput, driverName.split(" ")[0], driverName.split(" ")[1]]);
+    }
+
+    static async updateTeamImage(db,categoryName, teamName, imageURLInput){
+
+      categoryName = categoryName.replace(/_/g, " ");
+      teamName = teamName.replace(/_/g, " ");
+
+      await db.run(`UPDATE team SET team_picture = ? WHERE team_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)`,[imageURLInput,teamName,categoryName]);
+    }
+
+    static async updateVehicleImage(db,categoryName, teamName, vehicleName, imageURLInput){
+
+      categoryName = categoryName.replace(/_/g, " ");
+      teamName = teamName.replace(/_/g, " ");
+      vehicleName = vehicleName.replace(/_/g, " ");
+
+      await db.run(`UPDATE vehicle SET vehicle_picture = ? WHERE vehicle_chassis_name = ? AND team_ID = (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[imageURLInput,vehicleName,teamName, categoryName]);
+    }
+
+    static async updateSeasonImage(db,categoryName, seasonYear, imageURLInput){
+
+      categoryName = categoryName.replace(/_/g, " ");
+
+      await db.run(`UPDATE season SET season_picture = ? WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)`,[imageURLInput,seasonYear,categoryName]);
+    }
+
+    static async updateRaceImage(db,categoryName,seasonYear,raceName, imageURLInput){
+      categoryName = categoryName.replace(/_/g, " ");
+      let raceWeekendIDs = await db.all(`SELECT raceWeekend_ID FROM raceInSeason WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_ID = 
+                                        (SELECT season_ID FROM season WHERE season_year = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[categoryName,seasonYear,categoryName]);
+      let raceIDs = await db.all("SELECT raceWeekend_ID FROM raceWeekend WHERE race_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?)",[raceName.replace(/_/g, " "),categoryName]);
+      
+      raceWeekendIDs = raceWeekendIDs.map(x => x.raceWeekend_ID);
+      raceIDs = raceIDs.map(x => x.raceWeekend_ID);
+      let intersection = raceWeekendIDs.filter(element => raceIDs.includes(element));
+
+      await db.run(`UPDATE raceWeekend SET race_picture = ? WHERE raceWeekend_ID = ?`,[imageURLInput, intersection[0]]);
+
+    }
+    
 }
 
 module.exports = Databse;
