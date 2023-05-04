@@ -105,7 +105,7 @@ function populateForm(buttonID,relation){
             form.action = "/season/"+relation+"/scoring";
 
             //position
-            addLabelAndText(form,"Position:","positionInput");
+            addLabelAndText(form,"Position:<br>(Enter Existing Position to Overwrite)","positionInput");
 
             //points
             addLabelAndText(form,"Points","pointsInput");
@@ -238,7 +238,7 @@ function populateForm(buttonID,relation){
             form.action = relation+"turn";
 
             //Turn Number
-            addLabelAndText(form,"Turn Number","turnNumberInput");
+            addLabelAndText(form,"Turn Number<br>Enter Existing Turn Number to OVerwrite","turnNumberInput");
 
             //Turn Name
             addLabelAndText(form,"Turn Name","turnNameInput");
@@ -253,7 +253,8 @@ function populateForm(buttonID,relation){
             form.action = "/race/"+relation + "/PracticeResult/"+sessionNum+"/";
 
             //Driver Name
-            addLabelAndText(form,"Driver Name","driverNameInput");
+            addLabelAndText(form,"Driver First Name","driverFirstNameInput");
+            addLabelAndText(form,"Driver Last Name","driverLastNameInput");
 
             addLabelAndTextArea(form,"Driver Lap Time","driverLapTimeInput",1,"00:00:00");
 
@@ -268,7 +269,8 @@ function populateForm(buttonID,relation){
             form.action = "/race/"+relation + "/QualifyingResult/"+sessionNum+"/";
 
             //Driver Name
-            addLabelAndText(form,"Driver Name","driverNameInput");
+            addLabelAndText(form,"Driver First Name","driverFirstNameInput");
+            addLabelAndText(form,"Driver Last Name","driverLastNameInput");
 
             addLabelAndTextArea(form,"Driver Lap Time","driverLapTimeInput",1,"00:00:00");
 
@@ -282,7 +284,8 @@ function populateForm(buttonID,relation){
             form.action = "/race/"+relation + "/RaceResult/"+sessionNum+"/";
 
             //Driver Name
-            addLabelAndText(form,"Driver Name","driverNameInput");
+            addLabelAndText(form,"Driver First Name","driverFirstNameInput");
+            addLabelAndText(form,"Driver Last Name","driverLastNameInput");
 
             addLabelAndTextArea(form,"Driver Lap Time","driverLapTimeInput",1,"00:00:00");
             
@@ -295,7 +298,8 @@ function populateForm(buttonID,relation){
             form.appendChild(formTitle);
             form.action = "/race/" + relation + "/PitStop";
 
-            addLabelAndText(form,"Driver Name:","driverNameInput");
+            addLabelAndText(form,"Driver First Name","driverFirstNameInput");
+            addLabelAndText(form,"Driver Last Name","driverLastNameInput");
             addLabelAndText(form,"Lap Number:","lapNumberInput");
             addLabelAndText(form,"Pit Time:","pitTimeInput");
             addLabelAndText(form,"Total Time:","totalTimeInput");
@@ -324,7 +328,8 @@ function populateForm(buttonID,relation){
             form.action = "/season/"+relation+"/entry";
 
             addLabelAndText(form,"Team:","teamInput");
-            addLabelAndText(form,"Driver:","driverInput");
+            addLabelAndText(form,"Driver First Name:","driverFirstInput");
+            addLabelAndText(form,"Driver Last Name:","driverLastInput");
             addLabelAndText(form,"Team Vehicle:","vehicleInput");
 
 

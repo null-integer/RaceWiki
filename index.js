@@ -24,7 +24,6 @@ const port = 3000;
 var bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
-// let jsonURL = parseUrl.json();
 app.use(express.static(path.join(__dirname,'static')));
 
 
@@ -77,6 +76,7 @@ app.get('/', async (req, res) => {
 	res.render('homepage', {
     categories:categories,
   });
+
 });
 
 //Sign In Page
@@ -188,6 +188,8 @@ app.get('/category/:categoryName', async (req, res) =>{
     let teams = await Database.findTeamsByCategory(db, categoryName);
     let seasons = await Database.findSeasonsByCategory(db,categoryName);
     let drivers = await Database.findDrivers(db,categoryName);
+
+    //Preprosessing the data
     seasons.sort((a,b) => parseInt(b.season_year) - parseInt(a.season_year));
     drivers.sort((a,b) => {
       if(a.driver_first_name < b.driver_first_name){
@@ -197,12 +199,21 @@ app.get('/category/:categoryName', async (req, res) =>{
       }else{
         return 0;
       }
-    })
+    });
     drivers = drivers.map(x => function() {return{"name" : x.driver_first_name + " " + x.driver_last_name}}());
 
-    //Section Data
-    //[Type of data in section, Section Title, Section Data, ...OPTIONS]
-    //Table Options = [Table Headings],[Type of Data in table]
+    //Article Sections in the body
+    /*
+      SECTIONS ARRAY STRUCTURE:
+      [
+        Type(Text or Table)  => String,
+        Section Title        => String
+        Section Data         => String when type = Text, Object when type = Table 
+        Table Column Names   => Array of Strings
+        Type of Data         => Array of Strings
+        URL                  => URL of Link if Section Data constains link
+      ]
+    */
     let sections = [
       ["Text", "Description", categoryInfo.category_description],
       ["Text", "Rules", categoryInfo.category_rules],
@@ -217,8 +228,11 @@ app.get('/category/:categoryName', async (req, res) =>{
       ["Driver's Champion",""],
       ["Constructor's Champion",""]
     ];
-  
+
+    //set the article title and website name
     let articleTitle = categoryName;
+
+    //Properties object to pass all the needed data
 
     let props = {
       articleTitle: articleTitle,
@@ -239,31 +253,35 @@ app.get('/category/:categoryName', async (req, res) =>{
 });
 
 //POST Methods for the category page
+
+//Add a new season to a category
 app.post('/category/:categoryName/season',async (req, res) =>{
 
-  let year = req.body.seasonYearinput;
+  let year = req.body.seasonYearinput.trim();
   let scoring = req.body.seasonScoringinput.split("\r\n").join(",");
 
   Database.newSeason(db, req.params["categoryName"], year, scoring);
   res.redirect(req.get('referer'));
 });
 
+//Add a new team to a category
 app.post('/category/:categoryName/team',async (req, res) =>{
   
-  let teamName = req.body.teamNameinput;
-  let teamBaselocation = req.body.teamLocationinput;
-  let teamPictureURL = req.body.teamPictureURLinput;
+  let teamName = req.body.teamNameinput.trim();
+  let teamBaselocation = req.body.teamLocationinput.trim();
+  let teamPictureURL = req.body.teamPictureURLinput.trim();
 
   Database.newTeam(db, req.params["categoryName"],teamName,teamBaselocation,teamPictureURL);
 
   res.redirect(req.get('referer'));
 });
 
+//Add a new flag to a category
 app.post('/category/:categoryName/flag',async (req, res) =>{
   
-  let flagName = req.body.flagNameinput;
-  let flagIcon = req.body.flagIconURLinput;
-  let flagMeaning = req.body.flagMeaninginput;
+  let flagName = req.body.flagNameinput.trim();
+  let flagIcon = req.body.flagIconURLinput.trim();
+  let flagMeaning = req.body.flagMeaninginput.trim();
 
   Database.newFlag(db, req.params["categoryName"], flagName,flagIcon, flagMeaning);
 
@@ -275,14 +293,15 @@ app.get('/driver/:driverName', async (req, res) =>{
 
   let driverName = req.params["driverName"].replace(/_/g, " "); 
   let driverInfo = await Database.findDriver(db, driverName);
+
   if(driverInfo){
 
     let sections = [
       ["Table","Teams",[],["Season","Team"],["Text","Text"]],
       ["Table","Wins",[],["Season","Race","Team"],["Text","Text","Text"]],
-      ["Table","Podiums",[],["Season","Race","Team"],["Text","Text","Text"]],
+      ["Table","Podiums",[],["Position","Season","Race","Team"],["Text","Text","Text","Text"]],
       ["Table","Pole Positions",[],["Season","Race","Team"],["Text","Text","Text"]],
-      ["Table","Results",[],["Season","Race","Team"],["Text","Text","Text"]],
+      ["Table","Results",[],["Position","Season","Race","Team"],["Text","Text","Text","Text"]],
     ];
   
     let generalInfo = [
@@ -317,12 +336,15 @@ app.get('/driver/:driverName', async (req, res) =>{
 
 });
 
+//All Results for drivers are calculated so no POST methods
+
 //Circuit Page
 app.get('/circuit/:circuitName', async (req, res) =>{
 
   let circuitInfo = await Database.findCircuitInfo(db,req.params["circuitName"]);
 
   if(circuitInfo){
+
     let turns = await Database.getTurns(db,req.params["circuitName"]);
     turns.sort((a,b)=>a["turn_number"]-b["turn_number"]);
   
@@ -356,7 +378,9 @@ app.get('/circuit/:circuitName', async (req, res) =>{
 
 });
 
-//POST methods for the circuit page
+//POST methods for circuit page
+
+//New Turn For a circuit
 app.post('/circuit/:circuitName/turn',async (req, res) =>{
   
   let turnNumber = req.body.turnNumberInput;
@@ -374,12 +398,13 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
   let teamInfo = await Database.findTeamByCategory(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
 
   if(teamInfo){
+
     let vehicles = await Database.findVehicles(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
   
     let sections = [
       ["Table","Vehicles", vehicles,[],["Link"],"/vehicle/"+req.params["categoryName"]+ "/"+req.params["teamName"]+"/"],
-      ["Table","Constructor's Championships", [],[],["Text"]],
-      ["Table","Driver's Championships",  [],[],["Text"]],
+      ["Table","Constructor's Championships", [],["Season","Position"],["Text","Text"]],
+      ["Table","Driver's Championships",  [],["Season","Driver","Position"],["Text","Text","Text"]],
       ["Table","Drivers", [],["Driver","Seasons"],["Text","Text"]],
       ["Table","Victories", [],["Driver","Race","Season"],["Text","Text","Text"]],
       ["Table","Podiums", [],["Driver","Race","Season","Place"],["Text","Text","Text","Text"]],
@@ -399,6 +424,7 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
     ];
   
     let articleTitle = teamInfo.team_name;
+
     let props = {
       categories:categories,
       articleTitle: articleTitle,
@@ -416,15 +442,17 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
 
 });
 
-//POST method for Team
+//POST methods for Team
+
+//New Vehicle for a team
 app.post('/:categoryName/:teamName/vehicle',async (req, res) =>{
   
-  let engine = req.body.vehicleEngineInput;
-  let chassis = req.body.vehicleChassisNameInput;
-  let seasonYear = req.body.vehicleSeasonYearInput;
-  let power = req.body.vehiclePowerInput;
-  let weight = req.body.vehicleWeightInput;
-  let url = req.body.vehiclePictureURLInput;
+  let engine = req.body.vehicleEngineInput.trim();
+  let chassis = req.body.vehicleChassisNameInput.trim();
+  let seasonYear = req.body.vehicleSeasonYearInput.trim();
+  let power = req.body.vehiclePowerInput.trim();
+  let weight = req.body.vehicleWeightInput.trim();
+  let url = req.body.vehiclePictureURLInput.trim();
 
   Database.newVehicle(db,req.params["categoryName"],req.params["teamName"],engine, chassis, seasonYear, power, weight, url);
 
@@ -438,7 +466,6 @@ app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
   let vehicleInfo = await Database.findVehicle(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "), req.params["vehicleName"].replace(/_/g," "));
 
   if(vehicleInfo){
-    // ["Table","Vehicles", vehicles,[],["Link"],"/vehicle/"+req.params["categoryName"]+ "/"+req.params["teamName"]+"/"],
 
     let sections = [
       ["Table","Drivers",[],[],["Text"]],
@@ -450,7 +477,7 @@ app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
   
     let generalInfo = [
       ["Team",req.params["teamName"].replace(/_/g," ")],
-      ["Season",""],
+      ["Season",vehicleInfo.vehicle_year],
       ["Engine",vehicleInfo.vehicle_engine],
       ["Power", vehicleInfo.vehicle_power + " HP"],
       ["Weight",vehicleInfo.vehicle_weight + " Kg"],
@@ -477,6 +504,8 @@ app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
 
 });
 
+//All Results for vehicles are calculated so no POST methods
+
 //Season Page
 app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
 
@@ -496,6 +525,7 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
     for(let round = 0; round < calendar.length; round+=1){
       calendarArray.push({"Round":round + 1, "Date":calendar[round].race_date, "Name":calendar[round].race_name});
     }
+    calendarArray.sort(function(a,b){return new Date(a.Date) - new Date(b.Date)});
   
     let entries = await Database.findEntries(db,categoryName, req.params["seasonYear"]);
     let teams = [];
@@ -542,18 +572,21 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
 });
 
 //POST methods for Season
+
+//New Scoring for a season
 app.post('/season/:categoryName/:seasonYear/scoring',async (req, res) =>{
   
-  let position = req.body.positionInput;
-  let points = req.body.pointsInput;
+  let position = req.body.positionInput.trim();
+  let points = req.body.pointsInput.trim();
 
   Database.newScoring(db,position,points, req.params["categoryName"],req.params["seasonYear"]);
   res.redirect(req.get('referer'));
 });
 
+//Add a new Race to the calendar
 app.post('/season/:categoryName/:seasonYear/race',async (req, res) =>{
   
-  let raceName = req.body.raceNameInput;
+  let raceName = req.body.raceNameInput.trim().toUpperCase();
   let raceDate = req.body.raceDateInput;
 
   Database.newRaceWeekend(db, raceName, raceDate, req.params["categoryName"], req.params["seasonYear"]);
@@ -561,13 +594,15 @@ app.post('/season/:categoryName/:seasonYear/race',async (req, res) =>{
   res.redirect(req.get('referer'));
 });
 
+//Add a new Entry to the season
 app.post('/season/:categoryName/:seasonYear/entry',async (req, res) =>{
   
-  let team = req.body.teamInput;
-  let driver = req.body.driverInput;
-  let vehicle = req.body.vehicleInput;
+  let team = req.body.teamInput.trim();
+  let driverFirst = req.body.driverFirstInput.trim();
+  let driverLast = req.body.driverLastInput.trim();
+  let vehicle = req.body.vehicleInput.trim();
 
-  Database.newSeasonEntry(db, team, driver, vehicle, req.params["categoryName"], req.params["seasonYear"]);
+  Database.newSeasonEntry(db, team, driverFirst, driverLast, vehicle, req.params["categoryName"], req.params["seasonYear"]);
 
   res.redirect(req.get('referer'));
 });
@@ -633,7 +668,7 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
       
   });
 
-  sections.push(["Table","Pit Stops",pitStops,["Driver","Lap","Pit Time","Total Time","Description"],["Text","Text","Text","Text","Text"]]);
+  sections.push(["Table","Pit Stops",pitStops,["Driver","Lap","Pit Time","Total Time","Description"],["Link","Text","Text","Text","Text"],"/driver/"]);
   sections.push(["Table","Incidents",incidents,["Drivers Involved","Lap","Description"],["Text","Text","Text"]]);
 
   let FL = lastRace ? [...lastRace].sort(compareTimes) : [];
@@ -661,12 +696,14 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
 });
 
 //POST Methods for Race
+
+//Add a new scheduled session to the race
 app.post('/race/:categoryName/:seasonYear/:raceName/schedule',async (req, res) =>{
   
   let sessionType = req.body.sessionTypeInput;
   let sessionTime = req.body.sessionTimeInput;
   let sessionDate = req.body.sessionDateInput;
-  let sessionWeather = req.body.sessionWeatherInput;
+  let sessionWeather = req.body.sessionWeatherInput.trim();
   let points = req.body.pointsInput == "Yes" ? 1 : 0;
 
 
@@ -676,70 +713,81 @@ app.post('/race/:categoryName/:seasonYear/:raceName/schedule',async (req, res) =
   res.redirect(req.get('referer'));
 });
 
+//Set a circuit for a race
 app.post('/race/:categoryName/:seasonYear/:raceName/circuit',async (req, res) =>{
   
-  let circuitName = req.body.circuitNameInput;
+  let circuitName = req.body.circuitNameInput.trim();
 
   Database.setCircuit(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],circuitName);
   
   res.redirect(req.get('referer'));
 });
 
+//Add a new practice session result
 app.post('/race/:categoryName/:seasonYear/:raceName/PracticeResult/:sessionNum',async (req, res) =>{
   
-  let driverName = req.body.driverNameInput;
-  let driverLapTime = req.body.driverLapTimeInput;
+  let driverFirstName = req.body.driverFirstNameInput.trim();
+  let driverLastName = req.body.driverLastNameInput.trim();
+  let driverLapTime = req.body.driverLapTimeInput.trim();
 
-  Database.newPracticeResult(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverName,driverLapTime,req.params["sessionNum"]);
+  Database.newPracticeResult(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverFirstName,driverLastName,driverLapTime,req.params["sessionNum"]);
   
   res.redirect(req.get('referer'));
 });
 
+//Add a new qualifying session result
 app.post('/race/:categoryName/:seasonYear/:raceName/QualifyingResult/:sessionNum',async (req, res) =>{
   
-  let driverName = req.body.driverNameInput;
-  let driverLapTime = req.body.driverLapTimeInput;
+  let driverFirstName = req.body.driverFirstNameInput.trim();
+  let driverLastName = req.body.driverLastNameInput.trim();
+  let driverLapTime = req.body.driverLapTimeInput.trim();
 
-  Database.newQualifyingResult(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverName,driverLapTime,req.params["sessionNum"]);
+  Database.newQualifyingResult(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverFirstName, driverLastName, driverLapTime,req.params["sessionNum"]);
   
   res.redirect(req.get('referer'));
 });
 
+//Add a new race session result
 app.post('/race/:categoryName/:seasonYear/:raceName/RaceResult/:sessionNum',async (req, res) =>{
   
-  let driverName = req.body.driverNameInput;
-  let driverLapTime = req.body.driverLapTimeInput;
-  let driverPosition = req.body.driverPositionInput;
+  let driverFirstName = req.body.driverFirstNameInput.trim();
+  let driverLastName = req.body.driverLastNameInput.trim();
+  let driverLapTime = req.body.driverLapTimeInput.trim();
+  let driverPosition = req.body.driverPositionInput.trim();
 
-  Database.newRaceResult(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverName,driverLapTime,driverPosition,req.params["sessionNum"]);
+  Database.newRaceResult(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverFirstName, driverLastName,driverLapTime,driverPosition,req.params["sessionNum"]);
   
   res.redirect(req.get('referer'));
 });
 
+//Add a new pitstop result
 app.post('/race/:categoryName/:seasonYear/:raceName/PitStop',async (req, res) =>{
   
-  let driverName = req.body.driverNameInput;
-  let lapNumber = req.body.lapNumberInput;
-  let pitTime = req.body.pitTimeInput;
-  let totalTime = req.body.totalTimeInput;
-  let pitDescription = req.body.pitDescriptionInput;
+  let driverFirstName = req.body.driverFirstNameInput.trim();
+  let driverLastName = req.body.driverLastNameInput.trim();
+  let lapNumber = req.body.lapNumberInput.trim();
+  let pitTime = req.body.pitTimeInput.trim();
+  let totalTime = req.body.totalTimeInput.trim();
+  let pitDescription = req.body.pitDescriptionInput.trim();
   
-  Database.newPitStop(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverName,lapNumber,pitTime,totalTime,pitDescription);
+  Database.newPitStop(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],driverFirstName, driverLastName,lapNumber,pitTime,totalTime,pitDescription);
 
   res.redirect(req.get('referer'));
 });
 
+//Add a new race incident
 app.post('/race/:categoryName/:seasonYear/:raceName/incident',async (req, res) =>{
   
   let drivers = req.body.DriversInvolvedInput;
-  let lapNumber = req.body.lapNumberInput;
-  let incidentDescription = req.body.incidentDescriptionInput;
+  let lapNumber = req.body.lapNumberInput.trim();
+  let incidentDescription = req.body.incidentDescriptionInput.trim();
 
   Database.newIncident(db, req.params["categoryName"],req.params["seasonYear"],req.params["raceName"],drivers,lapNumber,incidentDescription);
 
   res.redirect(req.get('referer'));
 });
 
+//Update session points
 app.post('/updatePoints',async (req, res) =>{
 
   try{
@@ -754,6 +802,7 @@ app.post('/updatePoints',async (req, res) =>{
 
 });
 
+//Toggle points for session
 app.post('/togglePoints',async (req, res) =>{
 
   try{
@@ -770,3 +819,40 @@ app.post('/togglePoints',async (req, res) =>{
 
 //Start the server
 app.listen(port, () => console.log('Server running'));
+
+/*
+  TODO:
+    category:
+      update description/rules string
+      update flag content
+      calculate the drivers and constructors for the latest season
+      on double click update the category image
+
+    driver:
+     on double click update driver image
+     update dob, number, nationality, penalty points
+     calculate teams,wins,podiums,pole positions, results
+     In podiums and results mark as gold, silver, or bronze
+
+    circuit:
+      on double click update circuit image
+      update Country,City, length
+    
+    team:
+      Update Team Base
+      ondouble click update image
+      calculate teams,drivers,podiums,pole positions, results, champs
+
+    season:
+      ondouble click update image 
+      calculate championships
+
+    vehicle:
+      ondouble click update image
+      calculate drivers, wins, podiums, pole, full result
+      update engine, power, weight, 
+
+    main:
+      calculate standings for current season
+
+*/
