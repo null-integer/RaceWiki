@@ -7,9 +7,9 @@ const User = require('./models/User');
 const path = require('path')
 const sequalize = require('./models/model')
 const bcrypt = require('bcrypt');
+const session = require('express-session')
 
 sequalize.sync().then(()=>console.log('ready'));
-
 
 //Instantiate modules
 const app = express();
@@ -17,6 +17,7 @@ app.set('view engine','ejs');
 app.use(express.static(`${__dirname}/static`))
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
+app.use(session({secret:"zkxckjaewqidjskaldanmcxz"}));
 
 //Host name and port
 const hostname = '127.0.0.1';
@@ -79,10 +80,13 @@ app.get('/users', async (req,res)=>{
 
 //Main Homepage
 app.get('/', async (req, res) => {
+  if (req.session.login){
+    res.render('homepage',{categories:categories});
+  }
+  else{
+    res.redirect('/signin')
+  }
   
-	res.render('homepage', {
-    categories:categories,
-  });
 });
 
 //Sign In Page
@@ -112,6 +116,8 @@ app.post('/signin',(req,res)=>{
       if(user){
         bcrypt.compare(pw,user.pwhash,(err,match)=>{
           if(match){
+            console.log("matching triggered")
+            req.session.login = user
             res.redirect('/')
           }
           else{
