@@ -14,8 +14,8 @@ console.log(User)
 //Instantiate modules
 const app = express();
 app.set('view engine','ejs');
-app.use(express.static(`${__dirname}/static`))
-app.use(express.urlencoded({extended: false}));
+// app.use(express.static(`${__dirname}/static`))
+// app.use(express.urlencoded({extended: false}));
 
 //Host name and port
 //const hostname = '127.0.0.1';
@@ -164,13 +164,24 @@ app.get('/controlpanel', async (req, res) => {
 
 //New Category Page
 app.get('/newcategory', async (req, res) => {
-  res.render('newCategory');
+  res.render('newCategory',{error:""});
 });
 
 //New Category Post
 app.post('/newcategory', async (req, res) => {
-  console.log(req.body);
-  res.redirect("/");
+
+  if(req.body.nameInput.trim().length == 0){
+    res.render('newCategory',{error:"Category name cannot be empty!"});
+  }else{
+    if(categories.includes(req.body.nameInput.trim())){
+      res.render('newCategory',{error:"Category already in database!"});
+    }else{
+      await Database.newCategory(db, req.body.nameInput.trim(), req.body.imageInput.trim(), req.body.descriptionInput.trim(), req.body.rulesInput.trim());
+      await updateCategories(db);
+      res.redirect("/");
+    }
+  }
+
 });
 
 //Articles
@@ -215,8 +226,8 @@ app.get('/category/:categoryName', async (req, res) =>{
       ]
     */
     let sections = [
-      ["Text", "Description", categoryInfo.category_description],
-      ["Text", "Rules", categoryInfo.category_rules],
+      ["Text", "Description", categoryInfo.category_description.length == 0 ? "?" : categoryInfo.category_description],
+      ["Text", "Rules", categoryInfo.category_rules.length == 0 ? "?" : categoryInfo.category_rules],
       ["Table","Championships",seasons,["Season Year"],["Link"],"/season/"+req.params["categoryName"]+"/"],
       ["Table","Teams",teams,[],["Link"], "/team/"+req.params["categoryName"]+"/"],
       ["Table","Drivers",drivers,[],["Link"],"/driver/"],

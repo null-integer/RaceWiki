@@ -13,30 +13,38 @@
 <body>
   <br>
   
-    <form class="form-horizontal" method="POST" action="/newcategory">
+    <form class="form-horizontal" action="/newcategory" method="POST">
+
+
+      <% if(error.length != 0) { %>
+        <div class="alert alert-danger" role="alert">
+          <%= error %>
+        </div>  
+      <% } %>
+
       <h2>New Category</h2>
-        <div class="form-group">
-          <label for="nameInput">Category Name</label>
-          <input type="text" class="form-control" id="nameInput">
-        </div>
+      <div class="form-group">
+        <label for="nameInput">Category Name</label>
+        <input type="text" class="form-control" id="nameInput" name="nameInput">
+      </div>
 
-        <div class="form-group">
-          <label for="nameInput">Category Image URL</label>
-          <input type="text" class="form-control" id="imageInput">
-        </div>
+      <div class="form-group">
+        <label for="nameInput">Category Image URL</label>
+        <input type="text" class="form-control" id="imageInput" name="imageInput">
+      </div>
 
-        <div class="form-group">
-            <label for="descriptionInput">Category Description</label>
-            <textarea class="form-control" id="descriptionInput" rows="3"></textarea>
-        </div>
+      <div class="form-group">
+          <label for="descriptionInput">Category Description</label>
+          <textarea class="form-control" id="descriptionInput" name="descriptionInput" rows="3"></textarea>
+      </div>
 
-        <div class="form-group">
-            <label for="rulesInput">Category Rules</label>
-            <textarea class="form-control" id="rulesInput" rows="3"></textarea>
-        </div>
+      <div class="form-group">
+          <label for="rulesInput">Category Rules</label>
+          <textarea class="form-control" id="rulesInput" name="rulesInput" rows="3"></textarea>
+      </div>
 
-        <br>
-        <input type="submit" value="Submit">
+      <br>
+      <input type="submit" value="Submit">
 
     </form>
   

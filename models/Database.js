@@ -3,6 +3,9 @@
 */
 class Databse{
 
+    static async newCategory(db, categoryName, categoryPicture, categoryDescription, categoryRules){
+      await db.run(`INSERT INTO category (category_name, category_description, category_rules, category_picture) values (?,?,?,?)`,[categoryName, categoryDescription, categoryRules, categoryPicture]);
+    }
     static async findCategorybyName(db, categoryName){
         categoryName = categoryName.replace(/_/g, " ");
         const result = await db.get("SELECT * FROM category WHERE category_name = ?;",[categoryName]);
