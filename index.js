@@ -17,10 +17,13 @@ const app = express();
 app.set('view engine','ejs');
 
 // app.use(express.static(`${__dirname}/static`))
-// app.use(express.urlencoded({extended: false}));
+app.use(express.urlencoded({extended: false}));
+app.use(express.json());
+app.use(session({secret:"zkxckjaewqidjskaldanmcxz"}));
+
 
 //Host name and port
-//const hostname = '127.0.0.1';
+const hostname = '127.0.0.1';
 const port = 3000;
 
 var bodyParser = require('body-parser');
@@ -224,72 +227,74 @@ app.get('/category/:categoryName', async (req, res) =>{
     categoryName = req.params['categoryName'].replace(/_/g, " ");
 
     if (categories.includes(categoryName)){
-
-    //Fetching needed info from database
-    let categoryInfo = await Database.findCategorybyName(db,categoryName);
-    let flags = await Database.findFlagsByCategory(db, categoryName);
-    let teams = await Database.findTeamsByCategory(db, categoryName);
-    let seasons = await Database.findSeasonsByCategory(db,categoryName);
-    let drivers = await Database.findDrivers(db,categoryName);
-
-    //Preprosessing the data
-    seasons.sort((a,b) => parseInt(b.season_year) - parseInt(a.season_year));
-    drivers.sort((a,b) => {
-      if(a.driver_first_name < b.driver_first_name){
-        return -1;
-      }else if(a.driver_first_name > b.driver_first_name){
-        return 1;
-      }else{
-        return 0;
+  
+      //Fetching needed info from database
+      let categoryInfo = await Database.findCategorybyName(db,categoryName);
+      let flags = await Database.findFlagsByCategory(db, categoryName);
+      let teams = await Database.findTeamsByCategory(db, categoryName);
+      let seasons = await Database.findSeasonsByCategory(db,categoryName);
+      let drivers = await Database.findDrivers(db,categoryName);
+  
+      //Preprosessing the data
+      seasons.sort((a,b) => parseInt(b.season_year) - parseInt(a.season_year));
+      drivers.sort((a,b) => {
+        if(a.driver_first_name < b.driver_first_name){
+          return -1;
+        }else if(a.driver_first_name > b.driver_first_name){
+          return 1;
+        }else{
+          return 0;
+        }
+      });
+      drivers = drivers.map(x => function() {return{"name" : x.driver_first_name + " " + x.driver_last_name}}());
+  
+      //Article Sections in the body
+      /*
+        SECTIONS ARRAY STRUCTURE:
+        [
+          Type(Text or Table)  => String,
+          Section Title        => String
+          Section Data         => String when type = Text, Object when type = Table 
+          Table Column Names   => Array of Strings
+          Type of Data         => Array of Strings
+          URL                  => URL of Link if Section Data constains link
+        ]
+      */
+      let sections = [
+        ["Text", "Description", categoryInfo.category_description.length == 0 ? "?" : categoryInfo.category_description],
+        ["Text", "Rules", categoryInfo.category_rules.length == 0 ? "?" : categoryInfo.category_rules],
+        ["Table","Championships",seasons,["Season Year"],["Link"],"/season/"+req.params["categoryName"]+"/"],
+        ["Table","Teams",teams,[],["Link"], "/team/"+req.params["categoryName"]+"/"],
+        ["Table","Drivers",drivers,[],["Link"],"/driver/"],
+        ["Table","Flags", flags, ["Icon", "Name", "Meaning"], ["Image","Text","Text"]]
+      ];
+    
+      //General Info Data
+      let generalInfo = [
+        ["Driver's Champion",""],
+        ["Constructor's Champion",""]
+      ];
+  
+      //set the article title and website name
+      let articleTitle = categoryName;
+  
+      //Properties object to pass all the needed data
+  
+      let props = {
+        articleTitle: articleTitle,
+        categories:categories,
+        sections:sections, 
+        generalInfo:generalInfo,
+        pictureURL: categoryInfo.category_picture,
+        relation: req.params['categoryName'],
+        additionalScripts: ['/js/category.js']
       }
-    });
-    drivers = drivers.map(x => function() {return{"name" : x.driver_first_name + " " + x.driver_last_name}}());
-
-    //Article Sections in the body
-    /*
-      SECTIONS ARRAY STRUCTURE:
-      [
-        Type(Text or Table)  => String,
-        Section Title        => String
-        Section Data         => String when type = Text, Object when type = Table 
-        Table Column Names   => Array of Strings
-        Type of Data         => Array of Strings
-        URL                  => URL of Link if Section Data constains link
-      ]
-    */
-    let sections = [
-      ["Text", "Description", categoryInfo.category_description.length == 0 ? "?" : categoryInfo.category_description],
-      ["Text", "Rules", categoryInfo.category_rules.length == 0 ? "?" : categoryInfo.category_rules],
-      ["Table","Championships",seasons,["Season Year"],["Link"],"/season/"+req.params["categoryName"]+"/"],
-      ["Table","Teams",teams,[],["Link"], "/team/"+req.params["categoryName"]+"/"],
-      ["Table","Drivers",drivers,[],["Link"],"/driver/"],
-      ["Table","Flags", flags, ["Icon", "Name", "Meaning"], ["Image","Text","Text"]]
-    ];
   
-    //General Info Data
-    let generalInfo = [
-      ["Driver's Champion",""],
-      ["Constructor's Champion",""]
-    ];
-
-    //set the article title and website name
-    let articleTitle = categoryName;
-
-    //Properties object to pass all the needed data
-
-    let props = {
-      articleTitle: articleTitle,
-      categories:categories,
-      sections:sections, 
-      generalInfo:generalInfo,
-      pictureURL: categoryInfo.category_picture,
-      relation: req.params['categoryName'],
-      additionalScripts: ['/js/category.js']
+      res.render('article', {props:props,permission:req.session.permission});
+  
     }
-  }
-  }
 
-  
+  }
   else{
     res.render("notFound");
   }  
