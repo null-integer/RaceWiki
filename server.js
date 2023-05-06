@@ -8,6 +8,7 @@ const path = require('path')
 const sequalize = require('./models/model')
 const bcrypt = require('bcrypt');
 const session = require('express-session')
+const Op = require('sequelize').Op;
 
 sequalize.sync().then(()=>console.log('ready'));
 
@@ -81,7 +82,7 @@ app.get('/users', async (req,res)=>{
 //Main Homepage
 app.get('/', async (req, res) => {
   if (req.session.login){
-    res.render('homepage',{categories:categories});
+    res.render('homepage',{categories:categories,permission:req.session.login.permission});
   }
   else{
     res.redirect('/signin')
@@ -91,7 +92,13 @@ app.get('/', async (req, res) => {
 
 //Sign In Page
 app.get('/signin', async (req, res) => {
-	res.render('signin');
+  if(req.session.login){
+    res.redirect('/')
+  }
+  else{
+    res.render('signin');
+  }
+	
 });
 
 //check credential in User db
@@ -176,9 +183,18 @@ app.post('/register',(req,res)=>{
 
 //Control Panel 
 app.get('/controlpanel', async (req, res) => {
-	res.render('controlPanel',{
-    categories:categories,
-  });
+  if(req.session.login && req.session.login.permission=="ADMIN"){
+    User.findAll({where:{permission: {[Op.ne]: 'ADMIN'}}}).then(users=>{
+      res.render('controlPanel',{
+        categories:categories,
+        users:users
+      });
+    })
+  }
+  else{
+    res.redirect('/');
+  }
+	
 });
 
 //New Category Page
@@ -196,51 +212,54 @@ app.post('/newcategory', async (req, res) => {
 
 //New Category Page
 app.get('/category/:categoryName', async (req, res) =>{
+  if(req.session.login){
+    categoryName = req.params['categoryName'].replace(/_/g, " ");
 
-  categoryName = req.params['categoryName'].replace(/_/g, " ");
-
-  if (categories.includes(categoryName)){
-
-    //Fetching needed info from database
-    let categoryInfo = await Database.findCategorybyName(db,categoryName);
-    let flags = await Database.findFlagsByCategory(db, categoryName);
-    let teams = await Database.findTeamsByCategory(db, categoryName);
-    let seasons = await Database.findSeasonsByCategory(db,categoryName);
-    seasons.sort((a,b) => parseInt(b.season_year) - parseInt(a.season_year));
-
-    //Section Data
-    //[Type of data in section, Section Title, Section Data, ...OPTIONS]
-    //Table Options = [Table Headings],[Type of Data in table]
-    let sections = [
-      ["Text", "Description", categoryInfo.category_description],
-      ["Text", "Rules", categoryInfo.category_rules],
-      ["Table","Championships",seasons,["Season Year"],["Link"],"/season/"+req.params["categoryName"]+"/"],
-      ["Table","Teams",teams,[],["Link"], "/team/"+req.params["categoryName"]+"/"],
-      ["Table","Drivers",[],["Driver Name"],["Text"]],
-      ["Table","Flags", flags, ["Icon", "Name", "Meaning"], ["Image","Text","Text"]]
-    ];
+    if (categories.includes(categoryName)){
   
-    //General Info Data
-    let generalInfo = [
-      ["Driver's Champion",""],
-      ["Constructor's Champion",""]
-    ];
+      //Fetching needed info from database
+      let categoryInfo = await Database.findCategorybyName(db,categoryName);
+      let flags = await Database.findFlagsByCategory(db, categoryName);
+      let teams = await Database.findTeamsByCategory(db, categoryName);
+      let seasons = await Database.findSeasonsByCategory(db,categoryName);
+      seasons.sort((a,b) => parseInt(b.season_year) - parseInt(a.season_year));
   
-    let articleTitle = categoryName;
-
-    let props = {
-      articleTitle: articleTitle,
-      categories:categories,
-      sections:sections, 
-      generalInfo:generalInfo,
-      pictureURL: categoryInfo.category_picture,
-      relation: req.params['categoryName'],
-      additionalScripts: ['/js/category.js']
+      //Section Data
+      //[Type of data in section, Section Title, Section Data, ...OPTIONS]
+      //Table Options = [Table Headings],[Type of Data in table]
+      let sections = [
+        ["Text", "Description", categoryInfo.category_description],
+        ["Text", "Rules", categoryInfo.category_rules],
+        ["Table","Championships",seasons,["Season Year"],["Link"],"/season/"+req.params["categoryName"]+"/"],
+        ["Table","Teams",teams,[],["Link"], "/team/"+req.params["categoryName"]+"/"],
+        ["Table","Drivers",[],["Driver Name"],["Text"]],
+        ["Table","Flags", flags, ["Icon", "Name", "Meaning"], ["Image","Text","Text"]]
+      ];
+    
+      //General Info Data
+      let generalInfo = [
+        ["Driver's Champion",""],
+        ["Constructor's Champion",""]
+      ];
+    
+      let articleTitle = categoryName;
+  
+      let props = {
+        articleTitle: articleTitle,
+        categories:categories,
+        sections:sections, 
+        generalInfo:generalInfo,
+        pictureURL: categoryInfo.category_picture,
+        relation: req.params['categoryName'],
+        additionalScripts: ['/js/category.js']
+      }
+  
+      res.render('article', {props:props,permission: req.session.login.permission});
+  
     }
-
-    res.render('article', {props:props});
-
   }
+
+  
   else{
     res.render("notFound");
   }  

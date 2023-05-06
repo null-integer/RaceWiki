@@ -20,7 +20,6 @@
       </a>
 
       <div class="ms-auto d-lg-none align-items-center">
-        <a href="/signin" class="btn btn-sm btn-outline-danger me-2">Sign In</a>
         <a href="/controlpattern" class="btn btn-sm btn-outline-warning">Control Panel</a>
       </div>
 
@@ -38,8 +37,10 @@
           <a class="nav-link" href="/category/<%= category.replace(/ /g, '_') %>"><%= category %></a>
         <% } %>
         <a class="nav-link" href="/newcategory">+</a>
-        <a href="/signin" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-danger ms-auto">Sign In</a>
-        <a href="/controlpanel" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-warning ms-2">Control Panel</a>
+        <% if(permission == "ADMIN"){%>
+          <a href="/controlpanel" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-warning ms-2">Control Panel</a>
+        <%} %>
+        
       </nav>
       
       <form action="/search" method="get" class="mt-2 d-lg-none w-100">
@@ -83,7 +84,7 @@
           <h2 id="<%= section[1] %>"><%= section[1] %>
 
             <!-- Adding an add button to section (Should not be visible to normal users)-->
-            <% if(section[0] == "Table") { %>
+            <% if(section[0] == "Table" && permission == "ADMIN") { %>
               <button type="button" class="btn btn-success" id="<%= section[1] %>Button" onclick="showForm('<%= section[1] %>Button','<%= props.relation %>')">+</button>            
             <% } %>
 
