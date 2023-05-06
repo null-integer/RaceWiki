@@ -92,7 +92,7 @@
 
           <!-- If section is text, just display the text -->
           <% if(section[0] == "Text") { %>
-            <p id="<%= section[1] %>Text" ondblclick="EditText('<%= section[1] %>Text')"> <%= section[2] %> </p>
+            <p id="<%= section[1] %>Text"> <%= section[2] %> </p>
 
           <!-- If section is tabular data -->
           <% } else if (section[0] == "Table") { %>  
@@ -139,7 +139,7 @@
           <div class="card-body">
             <h5 class="card-title">General Info</h5>
             <% for (let info of props.generalInfo) { %>
-              <p class="card-text"><%= info[0] %>: <%= info[1] %></p>       
+              <p class="card-text"><%= info[0] %>:</p> <p class="card-text card-info"><%= info[1] %></p><br>
             <% } %>
           </div>
         </div>

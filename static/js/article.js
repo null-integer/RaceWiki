@@ -105,7 +105,7 @@ function populateForm(buttonID,relation){
             form.action = "/season/"+relation+"/scoring";
 
             //position
-            addLabelAndText(form,"Position:","positionInput");
+            addLabelAndText(form,"Position:<br>(Enter Existing Position to Overwrite)","positionInput");
 
             //points
             addLabelAndText(form,"Points","pointsInput");
@@ -238,7 +238,7 @@ function populateForm(buttonID,relation){
             form.action = relation+"turn";
 
             //Turn Number
-            addLabelAndText(form,"Turn Number","turnNumberInput");
+            addLabelAndText(form,"Turn Number<br>Enter Existing Turn Number to OVerwrite","turnNumberInput");
 
             //Turn Name
             addLabelAndText(form,"Turn Name","turnNameInput");
@@ -253,7 +253,8 @@ function populateForm(buttonID,relation){
             form.action = "/race/"+relation + "/PracticeResult/"+sessionNum+"/";
 
             //Driver Name
-            addLabelAndText(form,"Driver Name","driverNameInput");
+            addLabelAndText(form,"Driver First Name","driverFirstNameInput");
+            addLabelAndText(form,"Driver Last Name","driverLastNameInput");
 
             addLabelAndTextArea(form,"Driver Lap Time","driverLapTimeInput",1,"00:00:00");
 
@@ -268,7 +269,8 @@ function populateForm(buttonID,relation){
             form.action = "/race/"+relation + "/QualifyingResult/"+sessionNum+"/";
 
             //Driver Name
-            addLabelAndText(form,"Driver Name","driverNameInput");
+            addLabelAndText(form,"Driver First Name","driverFirstNameInput");
+            addLabelAndText(form,"Driver Last Name","driverLastNameInput");
 
             addLabelAndTextArea(form,"Driver Lap Time","driverLapTimeInput",1,"00:00:00");
 
@@ -282,7 +284,8 @@ function populateForm(buttonID,relation){
             form.action = "/race/"+relation + "/RaceResult/"+sessionNum+"/";
 
             //Driver Name
-            addLabelAndText(form,"Driver Name","driverNameInput");
+            addLabelAndText(form,"Driver First Name","driverFirstNameInput");
+            addLabelAndText(form,"Driver Last Name","driverLastNameInput");
 
             addLabelAndTextArea(form,"Driver Lap Time","driverLapTimeInput",1,"00:00:00");
             
@@ -295,7 +298,8 @@ function populateForm(buttonID,relation){
             form.appendChild(formTitle);
             form.action = "/race/" + relation + "/PitStop";
 
-            addLabelAndText(form,"Driver Name:","driverNameInput");
+            addLabelAndText(form,"Driver First Name","driverFirstNameInput");
+            addLabelAndText(form,"Driver Last Name","driverLastNameInput");
             addLabelAndText(form,"Lap Number:","lapNumberInput");
             addLabelAndText(form,"Pit Time:","pitTimeInput");
             addLabelAndText(form,"Total Time:","totalTimeInput");
@@ -324,7 +328,8 @@ function populateForm(buttonID,relation){
             form.action = "/season/"+relation+"/entry";
 
             addLabelAndText(form,"Team:","teamInput");
-            addLabelAndText(form,"Driver:","driverInput");
+            addLabelAndText(form,"Driver First Name:","driverFirstInput");
+            addLabelAndText(form,"Driver Last Name:","driverLastInput");
             addLabelAndText(form,"Team Vehicle:","vehicleInput");
 
 
@@ -339,6 +344,77 @@ function populateForm(buttonID,relation){
             addLabelAndTextArea(form, "Drivers Involved", "DriversInvolvedInput",10,"First-Name Last-Name\nFirst-Name Last-Name");
             addLabelAndText(form,"Lap Number:","lapNumberInput");
             addLabelAndTextArea(form,"Incident Description","incidentDescriptionInput",10,"");
+        break;
+
+        case "updateCategoryImage":
+            //Form Title
+            formTitle.innerHTML = "Update Category Image";
+            form.appendChild(formTitle);
+            form.action = "/category/"+relation+"/image";
+
+            addLabelAndText(form,"New Image URL:","imageURLInput");
+
+        break;
+
+        case "updateCircuitImage":
+            //Form Title
+            formTitle.innerHTML = "Update Circuit Image";
+            form.appendChild(formTitle);
+            form.action = "/circuit/"+relation+"/image";
+
+            addLabelAndText(form,"New Image URL:","imageURLInput");
+
+        break;        
+        
+        case "updateDriverImage":
+            //Form Title
+            formTitle.innerHTML = "Update Driver Image";
+            form.appendChild(formTitle);
+            form.action = "/driver/"+relation+"/image";
+
+            addLabelAndText(form,"New Image URL:","imageURLInput");
+
+        break;        
+        
+        case "updateTeamImage":
+            //Form Title
+            formTitle.innerHTML = "Update Team Image";
+            form.appendChild(formTitle);
+            form.action = "/"+relation+"/image";
+
+            addLabelAndText(form,"New Image URL:","imageURLInput");
+
+        break;
+
+        case "updateVehicleImage":
+            //Form Title
+            formTitle.innerHTML = "Update Vehicle Image";
+            form.appendChild(formTitle);
+            form.action = "/vehicle/"+relation+"/image";
+
+            addLabelAndText(form,"New Image URL:","imageURLInput");
+
+        break;
+
+        case "updateSeasonImage":
+            //Form Title
+            formTitle.innerHTML = "Update Season Image";
+            form.appendChild(formTitle);
+            form.action = "/"+relation+"/image";
+            
+            addLabelAndText(form,"New Image URL:","imageURLInput");
+
+        break;
+
+
+        case "updateRaceImage":
+            //Form Title
+            formTitle.innerHTML = "Update Race Image";
+            form.appendChild(formTitle);
+            form.action = "/race/"+relation+"/image";
+            
+            addLabelAndText(form,"New Image URL:","imageURLInput");
+
         break;
 
         default:
@@ -365,8 +441,4 @@ function hideForm(e){
 function showForm(buttonID,relation){
     document.getElementById("NewFormDiv").style.display = "block";
     populateForm(buttonID,relation);
-}
-
-function EditText(pID){
-    document.getElementById(pID).setAttribute("contenteditable","true");
 }

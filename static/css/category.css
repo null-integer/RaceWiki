@@ -37,6 +37,7 @@ aside .card-title {
 
 aside .card-text {
   line-height: 1.4;
+  display: inline-block;
 }
 
 /* Style the topic title */
@@ -78,4 +79,18 @@ aside .card-text {
   color: white;
   transform: translate(-50%,-50%);
   -ms-transform: translate(-50%,-50%); 
+}
+
+.fastest{
+  background-color: rgba(128,0,128,0.60)
+}
+
+.gold{
+  background-color: rgba(255,215,0,0.60)
+}
+.silver{
+  background-color: rgba(211,211,211,0.60)
+}
+.bronze{
+  background-color: rgba(205, 127, 50,0.60)
 }
