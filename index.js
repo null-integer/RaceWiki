@@ -85,6 +85,7 @@ app.get('/', async (req, res) => {
   if (req.session.login){
     res.render('homepage',{categories:categories,permission:req.session.login.permission});
   }
+  
   else{
     res.redirect('/signin')
   }
@@ -112,7 +113,7 @@ app.post('/signin',(req,res)=>{
   console.log(req.body.register)
 
   if(req.body.register){
-    res.redirect('/register')
+    res.redirect("/register")
     return;
   }
   else{

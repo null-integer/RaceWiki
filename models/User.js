@@ -11,7 +11,8 @@ User.init({
         type: DataTypes.STRING
     },
     permission:{
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        defaultValue: 'USER'
     }
 },{
     sequelize,
