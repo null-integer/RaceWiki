@@ -87,7 +87,7 @@ app.get('/', async (req, res) => {
   }
   
   else{
-    res.redirect('/signin')
+    res.render('homepage',{categories:categories, permission:'null'})
   }
 
 });
@@ -148,6 +148,14 @@ app.post('/signin',(req,res)=>{
   
 });
 
+app.get('/signout',(req,res)=>{
+  delete req.session.login
+  res.render('homepage',{
+    categories: categories,
+    permission: 'null'
+  })
+})
+
 //singup page
 app.get('/register',(req,res)=>{
   res.render('register');
@@ -197,6 +205,31 @@ app.get('/controlpanel', async (req, res) => {
   }
 	
 });
+app.post('/controlpanel' ,(req,res)=>{
+  let id = req.body.Id;
+  let username = req.body.username;
+  let permission = req.body.role;
+  switch(permission){
+    case 'photo':
+      permission = 'PHOTO'
+      break;
+    case 'writer':
+      permission = 'WRITER'
+      break;
+  }
+  User.update({permission: permission},{where: {id:id}})
+  res.redirect('/controlpanel')
+});
+
+app.post('/delete', (req,res)=>{
+  let id = req.body.Id
+  User.destroy({where:{id:id}});
+  res.redirect('/refresh')
+})
+
+app.get('/refresh',(req,res)=>{
+  res.redirect('/controlpanel')
+})
 
 //New Category Page
 app.get('/newcategory', async (req, res) => {
@@ -224,7 +257,7 @@ app.post('/newcategory', async (req, res) => {
 
 //New Category Page
 app.get('/category/:categoryName', async (req, res) =>{
-  if(req.session.login){
+  
     categoryName = req.params['categoryName'].replace(/_/g, " ");
 
     if (categories.includes(categoryName)){
@@ -290,12 +323,16 @@ app.get('/category/:categoryName', async (req, res) =>{
         relation: req.params['categoryName'],
         additionalScripts: ['/js/category.js']
       }
+      if(req.session.login){
+        res.render('article', {props:props, permission:req.session.login.permission});
+      }
+      else{
+        res.render('article', {props:props, permission:'null'});
+      }
   
-      res.render('article', {props:props,permission:req.session.permission});
+      
   
     }
-
-  }
   else{
     res.render("notFound");
   }  

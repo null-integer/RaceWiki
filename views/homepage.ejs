@@ -19,8 +19,13 @@
       </a>
 
       <div class="ms-auto d-lg-none align-items-center">
+        <% if(permission == 'null'){ %>
+          <a href="/signin" class="btn btn-sm btn-outline-danger me-2">Sign In</a>
+          <a href="/register" class="btn btn-sm btn-outline-danger me-2">Register</a>
+        <%}%>
+        
         <% if (permission == "ADMIN"){ %>
-        <a href="/controlpattern" class="btn btn-sm btn-outline-warning">Control Panel</a>
+        <a href="/controlpanel" class="btn btn-sm btn-outline-warning">Control Panel</a>
         <%}%>
 
       </div>
@@ -38,8 +43,17 @@
         <% for (let category of categories) { %>
             <a class="nav-link" href="/category/<%= category.replace(/ /g, '_') %>"><%= category %></a>
         <% } %>
-        <a class="nav-link" href="/newcategory">+</a>
+        <% if (permission == 'ADMIN') {%>
+          <a class="nav-link" href="/newcategory">+</a>
+          <%}%>
         
+        <% if (permission != 'null'){%>
+          <a href="/signout" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-danger ms-auto">Sign Out</a>
+        <%}%>
+        <% if (permission == 'null'){%>
+          <a href="/signin" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-danger ms-auto">Sign In</a>
+          <a href="/register" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-warning ms-2">Register</a>
+        <%}%>
         <% if (permission == "ADMIN"){ %>
           <a href="/controlpanel" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-warning ms-2">Control Panel</a>
         <%}%>
