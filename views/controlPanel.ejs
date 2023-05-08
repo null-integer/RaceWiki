@@ -34,7 +34,7 @@ $(document).ready(function(){
     
           <div class="ms-auto d-lg-none align-items-center">
             <a href="/signin" class="btn btn-sm btn-outline-danger me-2">Sign In</a>
-            <a href="/controlpattern" class="btn btn-sm btn-outline-warning">Control Panel</a>
+            <a href="/controlpanel" class="btn btn-sm btn-outline-warning">Control Panel</a>
           </div>
     
           <div class="ms-auto d-none d-lg-block">
@@ -50,7 +50,6 @@ $(document).ready(function(){
             <% for (let category of categories) { %>
               <a class="nav-link" href="/category/<%= category.replace(/ /g, '_') %>"><%= category %></a>
             <% } %>
-            <a href="/signin" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-danger ms-auto">Sign In</a>
             <a href="/controlpanel" class="nav-link d-none d-lg-inline-block btn btn-sm btn-outline-warning ms-2">Control Panel</a>
           </nav>
           
@@ -83,28 +82,73 @@ $(document).ready(function(){
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Name</th>						
-                        <th>Username</th>
+                        <th>User Name</th>						
                         <th>Edit Images</th>
                         <th>Edit Information</th>
-                        <th>Admin</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-
+                  <% for (let user of users) { %>
+                    <% var name %>
+                    <% name = "check"+ user.id %>
                     <tr>
-                        <td>1</td>
-                        <td>Alfonso Barrera</td>
-                        <td>ABARR114</td>
-                        <td><input class="form-check-input" type="checkbox" value="" id="flexCheckDefault"></td>
-                        <td><input class="form-check-input" type="checkbox" value="" id="flexCheckDefault"></td>
-                        <td><input class="form-check-input" type="checkbox" value="" id="flexCheckDefault"></td>
+                        <td><%= user.id %></td>
+                        <td><%= user.username %></td>
+                        <td><input class="form-check-input" type="checkbox" value="photo" id="c1<%= user.id %>" name="check<%= user.id %>" onclick="onlyOne(this,document.getElementById('c1<%= user.id %>').name)"></td>
+                        <td><input class="form-check-input" type="checkbox" value="writer" id="c2<%= user.id %>"name="check<%= user.id %>" onclick="onlyOne(this,document.getElementById('c2<%= user.id %>').name)"></td>
                         <td>
-                            <a href="#" class="settings" title="Save" data-toggle="tooltip"><i class="material-icons">check</i></a>
-                            <a href="#" class="delete" title="Delete" data-toggle="tooltip"><i class="material-icons">&#xE5C9;</i></a>
+                            <a href="#" class="settings" title="Save" onClick = "update('<%= user.id %>','<%= user.username %>',document.getElementById('c1<%= user.id %>').name)" data-toggle="tooltip" ><i class="material-icons">check</i></a>
+                            <a href="#" class="delete" title="Delete" onClick = "removeUser('<%= user.id %>')"data-toggle="tooltip"><i class="material-icons">&#xE5C9;</i></a>
                         </td>
+                        <script>
+                          function update(id,username,checkboxname){
+                            console.log(checkboxname)
+                            var checkboxes = document.getElementsByName(checkboxname)
+                            var checked_role = ''
+                            checkboxes.forEach((item)=>{
+                              if(item.checked == true){
+                                checked_role = item.value
+                              }
+                            })
+                            console.log(id,username,checked_role)
+                            $.ajax({
+                              type:"POST",
+                              url:"/controlpanel",
+                              data: {"Id":id,"username":username,"role":checked_role},
+                              success: function (result){
+                                console.log(result)
+                              },
+                              dataType: "json"
+                            });
+                          }
+
+                          function removeUser(uid){
+                            $.ajax({
+                              type:"POST",
+                              url:"/delete",
+                              data: {"Id":uid},
+                              success: function (result){
+                                console.log(result)
+                              },
+                              dataType: "json"
+                            });
+                          }
+                          
+                          function onlyOne(checkbox,id) {
+                            
+                            console.log(id);
+                              var checkboxes = document.getElementsByName(id)
+                              var checkvalue = checkbox.value
+                              console.log(checkvalue)
+                              checkboxes.forEach((item) => {
+                                  if (item !== checkbox) item.checked = false
+                              })
+                          }
+                        </script>    
+                       
                     </tr>
+                    <% } %>
 
                 </tbody>
             </table>
@@ -122,6 +166,7 @@ $(document).ready(function(){
             </div>
         </div>
     </div>
-</div>     
+</div> 
+
 </body>
 </html>

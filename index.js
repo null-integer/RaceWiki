@@ -1,24 +1,31 @@
 //Import required modules
+const request = require('supertest');
+const assert = require('assert');
 const express = require('express');
 const sqlite3 = require('sqlite3');
 const { open } = require('sqlite');
 const Database = require('./models/Database');
-const {User} = require('./models/User');
+const User = require('./models/User');
 const path = require('path')
-const sequalize = require('./models/index')
+const sequalize = require('./models/model')
+const bcrypt = require('bcrypt');
+const session = require('express-session')
+const Op = require('sequelize').Op;
 
 sequalize.sync().then(()=>console.log('ready'));
 
-
-console.log(User)
 //Instantiate modules
 const app = express();
 app.set('view engine','ejs');
+
 // app.use(express.static(`${__dirname}/static`))
-// app.use(express.urlencoded({extended: false}));
+app.use(express.urlencoded({extended: false}));
+app.use(express.json());
+app.use(session({secret:"zkxckjaewqidjskaldanmcxz"}));
+
 
 //Host name and port
-//const hostname = '127.0.0.1';
+const hostname = '127.0.0.1';
 const port = 3000;
 
 var bodyParser = require('body-parser');
@@ -70,32 +77,69 @@ function compareTimes(a,b){
   }
 }
 
+app.get('/users', async (req,res)=>{
+  const users = await User.findAll();
+  res.send(users)
+})
+
+request(app).get('/users')
+            .expect((res) => {
+                if (!('users' in res.body)) throw new Error("Missing users /users in body");
+            }).end(() => {console.log("/users working as expected")});
+
 //Main Homepage
 app.get('/', async (req, res) => {
+  if (req.session.login){
 
-  let standings = [];
+    let standings = [];
 
-  await Promise.all(categories.map(async (x) => {
-    const standing = await Database.findCurrentStandings(db,x);
-    console.log(standing);
-    let cat = standing[standing.length - 1];
-    let temp = {};
-    temp[cat] = standing;
-    standings.push(temp);
-  }));
+    await Promise.all(categories.map(async (x) => {
+      const standing = await Database.findCurrentStandings(db,x);
+      console.log(standing);
+      let cat = standing[standing.length - 1];
+      let temp = {};
+      temp[cat] = standing;
+      standings.push(temp);
+    }));
+    console.log(standings);
 
-  console.log(standings);
+    res.render('homepage',{categories:categories,permission:req.session.login.permission});
+  }
+  else{
+    let standings = [];
+
+    await Promise.all(categories.map(async (x) => {
+      const standing = await Database.findCurrentStandings(db,x);
+      console.log(standing);
+      let cat = standing[standing.length - 1];
+      let temp = {};
+      temp[cat] = standing;
+      standings.push(temp);
+    }));
   
-	res.render('homepage', {
-    categories:categories,
-  });
-
+    console.log(standings);
+    res.render('homepage',{categories:categories, permission:'null'})
+  }
+    
 });
+
+request(app).get('/')
+            .expect((res) => {
+                if (!('categories' in res.body)) throw new Error("Missing categories in / body");
+                if (!('permission' in res.body)) throw new Error("Missing permission in / body");
+            }).end(() => {console.log("/ working as expected")});
 
 //Sign In Page
 app.get('/signin', async (req, res) => {
-	res.render('signin');
+  if(req.session.login){
+    res.redirect('/')
+  }
+  else{
+    res.render('signin');
+  }
+	
 });
+
 
 //check credential in User db
 app.post('/signin',(req,res)=>{
@@ -103,36 +147,63 @@ app.post('/signin',(req,res)=>{
   let username = req.body.username.trim();
   let pw = req.body.password.trim();
 
-  if(req.body.register){
-    res.redirect('/register')
-    return
-  }
-  if(username.length==0){
-    errors.push({msg:"Please enter username"});
-  }
-  User.findOne({where: {username:username}}).then(user=>{
-    if(user){
-      bcrypt.compare(pw,user.pwhash,(err,match)=>{
-        if(match){
-          res.redirect('/homepage')
-        }
-        else{
-          errors.push({msg:"Username and password is incorrect"});
-          res.render('login',{
-            errors:errors
-          })
-        }
-      })
-    }
-    else{
-      errors.push({msg:'Username and password is incorrect'});
-      res.render('login',{
-        errors:errors
-      })
-    }
-  })
+  console.log(pw)
 
+  console.log(req.body.register)
+
+  if(req.body.register){
+    res.redirect("/register")
+    return;
+  }
+  else{
+    if(username.length==0){
+      errors.push({msg:"Please enter username"});
+    }
+    User.findOne({where: {username:username}}).then(user=>{
+      if(user){
+        bcrypt.compare(pw,user.pwhash,(err,match)=>{
+          if(match){
+            console.log("matching triggered")
+            req.session.login = user
+            res.redirect('/')
+          }
+          else{
+            errors.push({msg:"Username and password is incorrect"});
+            res.render('signin',{
+              errors:errors
+            })
+          }
+        })
+      }
+      else{
+        errors.push({msg:'Username and password is incorrect'});
+        res.render('signin',{
+          errors:errors
+        })
+      }
+    })
+  
+  }
+  
 });
+
+
+
+
+app.get('/signout',(req,res)=>{
+  delete req.session.login
+  res.render('homepage',{
+    categories: categories,
+    permission: 'null'
+  })
+})
+
+request(app).get('/signout')
+            .expect((res) => {
+                if (!('categories' in res.body)) throw new Error("Missing categories in /signout body");
+                if (!('permission' in res.body)) throw new Error("Missing permission in /signout body");
+                if (res.body.permission != 'null') throw new Error("Permissions not cleared after signout");
+            }).end(() => {console.log("/signout working as expected")});
 
 //singup page
 app.get('/register',(req,res)=>{
@@ -160,7 +231,7 @@ app.post('/register',(req,res)=>{
           username: username,
           pwhash: bcrypt.hashSync(pw,10)
         }).then(user=>{
-          res.redirect('/homepage')
+          res.redirect('/signin')
         });
       }
     })
@@ -170,10 +241,54 @@ app.post('/register',(req,res)=>{
 
 //Control Panel 
 app.get('/controlpanel', async (req, res) => {
-	res.render('controlPanel',{
-    categories:categories,
-  });
+  if(req.session.login && req.session.login.permission=="ADMIN"){
+    User.findAll({where:{permission: {[Op.ne]: 'ADMIN'}}}).then(users=>{
+      res.render('controlPanel',{
+        categories:categories,
+        users:users
+      });
+    })
+  }
+  else{
+    res.redirect('/');
+  }
+	
 });
+
+
+request(app).get('/controlpanel')
+            .expect((res) => {
+                if (res.res.rawHeaders[3] != '/') {
+                    if (!('categories' in res.body)) throw new Error("Missing categories in /controlpanel body");
+                    if (!('users' in res.body)) throw new Error("Missing users in /controlpanel body");
+                }
+            }).end(() => {console.log("/controlpanel working as expected")});
+
+app.post('/controlpanel' ,(req,res)=>{
+  let id = req.body.Id;
+  let username = req.body.username;
+  let permission = req.body.role;
+  switch(permission){
+    case 'photo':
+      permission = 'PHOTO'
+      break;
+    case 'writer':
+      permission = 'WRITER'
+      break;
+  }
+  User.update({permission: permission},{where: {id:id}})
+  res.redirect('/controlpanel')
+});
+
+app.post('/delete', (req,res)=>{
+  let id = req.body.Id
+  User.destroy({where:{id:id}});
+  res.redirect('/refresh')
+})
+
+app.get('/refresh',(req,res)=>{
+  res.redirect('/controlpanel')
+})
 
 //New Category Page
 app.get('/newcategory', async (req, res) => {
@@ -201,8 +316,8 @@ app.post('/newcategory', async (req, res) => {
 
 //Category Page
 app.get('/category/:categoryName', async (req, res) =>{
-
-  categoryName = req.params['categoryName'].replace(/_/g, " ");
+  
+    categoryName = req.params['categoryName'].replace(/_/g, " ");
 
   if (categories.includes(categoryName)){
 
@@ -269,13 +384,25 @@ app.get('/category/:categoryName', async (req, res) =>{
       additionalScripts: ['/js/category.js']
     }
 
-    res.render('article', {props:props});
+    if(req.session.login){
+      res.render('article', {props:props, permission:req.session.login.permission});
+    }
+    else{
+      res.render('article', {props:props, permission:'null'});
+    }
 
   }
   else{
     res.render("notFound");
   }  
 });
+
+
+request(app).get('/category/:categoryName')
+            .expect((res) => {
+                if (!('props' in res.body)) throw new Error("Missing props in /category body");
+                if (!('permission' in res.body)) throw new Error("Missing permission in /category body");
+            }).end(() => {console.log("/category working as expected")});
 
 //POST Methods for the category page
 
@@ -355,8 +482,6 @@ app.get('/driver/:driverName', async (req, res) =>{
     let teams = await Database.findDriverTeams(db, driverName);
     let results = await Database.findResults(db,driverName);
 
-    console.log(results);
-
     let sections = [
       ["Table","Teams",teams,["Season","Team","Category"],["Text","Text","Text"]],
       ["Table","Results",results,["Position","Season","Race"],["Text","Text","Text"]],
@@ -384,13 +509,24 @@ app.get('/driver/:driverName', async (req, res) =>{
       additionalScripts: ['/js/driver.js']
     };
   
-    res.render('article', {props:props});
+    if(req.session.login){
+      res.render('article', {props:props, permission:req.session.login.permission});
+    }
+    else{
+      res.render('article', {props:props, permission:'null'});
+    }
 
   }else{
     res.render("notFound");
   }
 
 });
+
+
+request(app).get('/driver/:driverName')
+            .expect((res) => {
+                if (!('props' in res.body)) throw new Error("Missing props in /driver body");
+            }).end(() => {console.log("/driver working as expected")});
 
 //POST Methods for Driver page
 
@@ -446,13 +582,23 @@ app.get('/circuit/:circuitName', async (req, res) =>{
       additionalScripts: ["/js/circuit.js"]
     };
   
-    res.render('article', {props:props});
-
+    if(req.session.login){
+      res.render('article', {props:props, permission:req.session.login.permission});
+    }
+    else{
+      res.render('article', {props:props, permission:'null'});
+    }
   }else{
     res.render("notFound");
   }
 
 });
+
+request(app).get('/circuit/:circuitName')
+            .expect((res) => {
+                if (!('props' in res.body)) throw new Error("Missing props in /circuit body");
+            }).end(() => {console.log("/circuit working as expected")});
+
 
 //POST methods for circuit page
 
@@ -525,12 +671,22 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
       additionalScripts: ["/js/team.js"],
     };
   
-    res.render('article', {props:props});
-  }else{
+    if(req.session.login){
+      res.render('article', {props:props, permission:req.session.login.permission});
+    }
+    else{
+      res.render('article', {props:props, permission:'null'});
+    }  }else{
     res.render("notFound");
   }
 
 });
+
+
+request(app).get('/team/:categoryName/:teamName')
+            .expect((res) => {
+                if (!('props' in res.body)) throw new Error("Missing props in /team body");
+            }).end(() => {console.log("/team working as expected")});
 
 //POST methods for Team
 
@@ -576,7 +732,6 @@ app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
   let vehicleInfo = await Database.findVehicle(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "), req.params["vehicleName"].replace(/_/g," "));
 
   if(vehicleInfo){
-
     let drivers = await Database.findVehicleDrivers(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "), req.params["vehicleName"].replace(/_/g," "));
     let results = await Database.findVehicleResults(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "), req.params["vehicleName"].replace(/_/g," "));
     
@@ -606,12 +761,23 @@ app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
       additionalScripts: ['/js/vehicle.js']
     };
   
-    res.render('article', {props:props});
+    if(req.session.login){
+      res.render('article', {props:props, permission:req.session.login.permission});
+    }
+    else{
+      res.render('article', {props:props, permission:'null'});
+    }
   }else{
     res.render("notFound");
   }
 
 });
+
+
+request(app).get('/vehicle/:categoryName/:teamName/:vehicleName')
+            .expect((res) => {
+                if (!('props' in res.body)) throw new Error("Missing props in /vehicle body");
+            }).end(() => {console.log("/vehicle working as expected")});
 
 //POST methods for Vehicle page
 
@@ -620,7 +786,7 @@ app.post('/vehicle/:categoryName/:teamName/:vehicleName/image',async (req, res) 
 
   Database.updateVehicleImage(db,req.params["categoryName"],req.params["teamName"],req.params["vehicleName"],req.body.imageURLInput.trim());
   
-  res.redirect(req.get('referer'));
+  res.redirect(req.et('referer'));
 });
 
 //Update the vehicle info
@@ -694,12 +860,23 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
       additionalScripts:['/js/season.js']
     };
   
-    res.render('article', {props:props});
+    if(req.session.login){
+      res.render('article', {props:props, permission:req.session.login.permission});
+    }
+    else{
+      res.render('article', {props:props, permission:'null'});
+    }
   }else{
     res.render("notFound");
   }
 
 });
+
+request(app).get('/season/:categoryName/:seasonYear')
+            .expect((res) => {
+                if (!('props' in res.body)) throw new Error("Missing props in /season body");
+            }).end(() => {console.log("/season working as expected")});
+
 
 //POST methods for Season
 
@@ -834,12 +1011,23 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
       additionalScripts: ["/js/results.js"]
     };
   
-    res.render('article', {props:props});
+    if(req.session.login){
+      res.render('article', {props:props, permission:req.session.login.permission});
+    }
+    else{
+      res.render('article', {props:props, permission:'null'});
+    }
   }else{
     res.render("notFound");
   }
 
 });
+
+
+request(app).get('/race/:categoryName/:seasonYear/:raceName')
+            .expect((res) => {
+                if (!('props' in res.body)) throw new Error("Missing props in /race body");
+            }).end(() => {console.log("/race working as expected")});
 
 //POST Methods for Race
 
@@ -976,3 +1164,26 @@ app.post('/togglePoints',async (req, res) =>{
 
 //Start the server
 app.listen(port, () => console.log('Server running'));
+
+/*
+  TODO:
+    category:
+      calculate the drivers and constructors for the latest season
+
+    driver:
+     calculate teams,wins,podiums,pole positions, results
+     In podiums and results mark as gold, silver, or bronze
+    
+    team:
+      calculate teams,drivers,podiums,pole positions, results, champs
+
+    season:
+      calculate championships
+
+    vehicle:
+      calculate drivers, wins, podiums, pole, full result
+
+    main:
+      calculate standings for current season
+
+*/

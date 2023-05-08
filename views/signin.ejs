@@ -7,24 +7,28 @@
     <header class = "login">
         <div class = "container">
             <div class="row justify-content-md-center pt-4 mt-5">
+                <div class="card" style="width: 30rem; height: 50rem;">
+
                 <div class="card-body">
-                    <h5 class = "card-title col text-center"> Sign In</h5>
-                    <div class="form-group">
-                        <label>Username</label>
-                        <input type="textbox" class="form-control" placeholder="Username" name="username">
-                    </div>
-                    <div class="form-group">
-                        <label for="">Password</label>
-                        <input type="password" class="form-control" placeholder="Password" name="password">
-                    </div>
-                    <div class="row main-nav" style="padding:5px">
-                        <button type="submit" class="btn btn-primary" name="login">Login</button>
-                    </div>
-                    <div class="row main-nav" style="padding:5px">
-                        <button type="submit" class="btn btn-primary" name="register">Register</button>
-                    </div>
+                    <h5 class = "card-title col text-center"> Race Wiki Sign In</h5>
+                    <form action="/signin" method="POST">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="textbox" class="form-control" placeholder="Username" name="username">
+                        </div>
+                        <div class="form-group">
+                            <label for="">Password</label>
+                            <input type="password" class="form-control" placeholder="Password" name="password">
+                        </div>
+                        <div  style="padding:55px">
+                            <button type="submit" class="btn btn-primary" name="login" value="lg">Login</button>
+                            <button type="submit" class="btn btn-primary" name="register" value="rg">Register</button>
+
+                        </div>
+                        
+                    </form>
                 </div>
-               
+               </div>
             </div>
         </div>
     </header>
