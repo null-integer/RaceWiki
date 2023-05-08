@@ -72,6 +72,19 @@ function compareTimes(a,b){
 
 //Main Homepage
 app.get('/', async (req, res) => {
+
+  let standings = [];
+
+  await Promise.all(categories.map(async (x) => {
+    const standing = await Database.findCurrentStandings(db,x);
+    console.log(standing);
+    let cat = standing[standing.length - 1];
+    let temp = {};
+    temp[cat] = standing;
+    standings.push(temp);
+  }));
+
+  console.log(standings);
   
 	res.render('homepage', {
     categories:categories,
@@ -186,7 +199,7 @@ app.post('/newcategory', async (req, res) => {
 
 //Articles
 
-//New Category Page
+//Category Page
 app.get('/category/:categoryName', async (req, res) =>{
 
   categoryName = req.params['categoryName'].replace(/_/g, " ");
@@ -199,6 +212,7 @@ app.get('/category/:categoryName', async (req, res) =>{
     let teams = await Database.findTeamsByCategory(db, categoryName);
     let seasons = await Database.findSeasonsByCategory(db,categoryName);
     let drivers = await Database.findDrivers(db,categoryName);
+    let champions = await Database.findChampions(db,categoryName);
 
     //Preprosessing the data
     seasons.sort((a,b) => parseInt(b.season_year) - parseInt(a.season_year));
@@ -236,8 +250,8 @@ app.get('/category/:categoryName', async (req, res) =>{
   
     //General Info Data
     let generalInfo = [
-      ["Driver's Champion",""],
-      ["Constructor's Champion",""]
+      ["Driver's Champion", champions[0]],
+      ["Constructor's Champion",champions[1]]
     ];
 
     //set the article title and website name
@@ -338,12 +352,14 @@ app.get('/driver/:driverName', async (req, res) =>{
 
   if(driverInfo){
 
+    let teams = await Database.findDriverTeams(db, driverName);
+    let results = await Database.findResults(db,driverName);
+
+    console.log(results);
+
     let sections = [
-      ["Table","Teams",[],["Season","Team"],["Text","Text"]],
-      ["Table","Wins",[],["Season","Race","Team"],["Text","Text","Text"]],
-      ["Table","Podiums",[],["Position","Season","Race","Team"],["Text","Text","Text","Text"]],
-      ["Table","Pole Positions",[],["Season","Race","Team"],["Text","Text","Text"]],
-      ["Table","Results",[],["Position","Season","Race","Team"],["Text","Text","Text","Text"]],
+      ["Table","Teams",teams,["Season","Team","Category"],["Text","Text","Text"]],
+      ["Table","Results",results,["Position","Season","Race"],["Text","Text","Text"]],
     ];
   
     let generalInfo = [
@@ -352,10 +368,8 @@ app.get('/driver/:driverName', async (req, res) =>{
       ["Nationality",driverInfo.driver_nationality.length == 0 ? "?" : driverInfo.driver_nationality],
       ["Penalty Points",driverInfo.driver_penalty_points.length == 0 ? "?" : driverInfo.driver_penalty_points],
       ["Championships",""],
-      ["Wins",""],
-      ["Podiums",""],
-      ["Pole Positions",""],
-      ["Fastests Laps",""],
+      ["Wins",results == undefined ? 0 : results.filter(x => {return x.position == 1}).length ],
+      ["Podiums",results == undefined ? 0 : results.filter(x => {return x.position == 1 || x.position == 2 || x.position == 3}).length],
     ];
   
     let articleTitle = driverName;
@@ -481,15 +495,12 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
   if(teamInfo){
 
     let vehicles = await Database.findVehicles(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
-  
+    let drivers = await Database.findTeamDrivers(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
+    let results = await Database.findTeamResults(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
+
     let sections = [
       ["Table","Vehicles", vehicles,[],["Link"],"/vehicle/"+req.params["categoryName"]+ "/"+req.params["teamName"]+"/"],
-      ["Table","Constructor's Championships", [],["Season","Position"],["Text","Text"]],
-      ["Table","Driver's Championships",  [],["Season","Driver","Position"],["Text","Text","Text"]],
-      ["Table","Drivers", [],["Driver","Seasons"],["Text","Text"]],
-      ["Table","Victories", [],["Driver","Race","Season"],["Text","Text","Text"]],
-      ["Table","Podiums", [],["Driver","Race","Season","Place"],["Text","Text","Text","Text"]],
-      ["Table","Pole Positions", [],["Driver","Race","Season"],["Text","Text","Text"]],
+      ["Table","Drivers", drivers,["Driver","Seasons"],["Text","Text"]],
       ["Table","Results" , [],["Driver","Race","Season","Place"],["Text","Text","Text","Text"]],
     ];
   
@@ -500,8 +511,6 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
       ["Driver's Champsionships",""],
       ["Victories",""],
       ["Podiums",""],
-      ["Pole Positions",""],
-      ["Fastests Laps",""]
     ];
   
     let articleTitle = teamInfo.team_name;
@@ -568,12 +577,12 @@ app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
 
   if(vehicleInfo){
 
+    let drivers = await Database.findVehicleDrivers(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "), req.params["vehicleName"].replace(/_/g," "));
+    let results = await Database.findVehicleResults(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "), req.params["vehicleName"].replace(/_/g," "));
+    
     let sections = [
-      ["Table","Drivers",[],[],["Text"]],
-      ["Table","Wins",[],["Driver","Race"],["Text","Text"]],
-      ["Table","Podiums",[],["Driver","Race"],["Text","Text"]],
-      ["Table","Pole Positions",[],["Driver","Race"],["Text","Text"]],
-      ["Table","Full Results",[],["Driver","Race"],["Text","Text"]]
+      ["Table","Drivers",drivers,[],["Link"],"/driver/"],
+      ["Table","Full Results",results,["Position","Driver","Race",],["Text","Text","Text"]]
     ];
   
     let generalInfo = [
@@ -582,10 +591,9 @@ app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
       ["Engine",vehicleInfo.vehicle_engine],
       ["Power", vehicleInfo.vehicle_power + " HP"],
       ["Weight",vehicleInfo.vehicle_weight + " Kg"],
-      ["Races",""],
-      ["Wins",""],
-      ["Podiums",""],
-      ["Pole Positions",""],
+      ["Races", results == undefined ? 0 : results.length],
+      ["Wins",results == undefined ? 0 : results.filter(x => {return x.Position == 1}).length ],
+      ["Podiums",results == undefined ? 0 : results.filter(x => {return x.Position == 1 || x.Position == 2 || x.Position == 3}).length],
     ];
   
     let articleTitle = vehicleInfo.vehicle_chassis_name;
@@ -657,13 +665,13 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
       }
     });
   
-  
+    let standings = await Database.findStandings(db,categoryName,req.params["seasonYear"]);  
     let sections = [
       ["Table","Scoring System",scoringSystem, ["Position","Points"],["Text","Text"]],
       ["Table","Entries",entries,["Team","Driver","Vehicle"],["Text","Text","Text"]],
       ["Table","Calendar",calendarArray,["Round","Date","Name"],["Text","Text","Link"],"/race/"+req.params["categoryName"]+"/"+req.params["seasonYear"]+"/"],
-      ["Table","Driver's Standings",[],["Driver","Points"],["Text","Text"]],
-      ["Table","Constructor's Standings",[],["Team","Points"],["Text","Text"]],
+      ["Table","Driver's Standings",standings[0],["Driver","Points"],["Text","Text"]],
+      ["Table","Constructor's Standings",standings[1],["Team","Points"],["Text","Text"]],
     ];
   
     let generalInfo = [
@@ -671,8 +679,8 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
       ["Races",calendarArray.length],
       ["Drivers",entries.length],
       ["Teams",teams.length],
-      ["Driver's Champion",""],
-      ["Constructor's Champion",""],
+      ["Driver's Champion",standings[0].length >= 1 ? standings[0][0].name : ""],
+      ["Constructor's Champion",standings[1].length >= 1 ? standings[1][0].team : ""],
     ];
   
     let articleTitle = req.params["seasonYear"]+ " "+categoryName+" Season";
@@ -968,26 +976,3 @@ app.post('/togglePoints',async (req, res) =>{
 
 //Start the server
 app.listen(port, () => console.log('Server running'));
-
-/*
-  TODO:
-    category:
-      calculate the drivers and constructors for the latest season
-
-    driver:
-     calculate teams,wins,podiums,pole positions, results
-     In podiums and results mark as gold, silver, or bronze
-    
-    team:
-      calculate teams,drivers,podiums,pole positions, results, champs
-
-    season:
-      calculate championships
-
-    vehicle:
-      calculate drivers, wins, podiums, pole, full result
-
-    main:
-      calculate standings for current season
-
-*/

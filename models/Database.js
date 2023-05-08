@@ -6,6 +6,7 @@ class Databse{
     static async newCategory(db, categoryName, categoryPicture, categoryDescription, categoryRules){
       await db.run(`INSERT INTO category (category_name, category_description, category_rules, category_picture) values (?,?,?,?)`,[categoryName, categoryDescription, categoryRules, categoryPicture]);
     }
+
     static async findCategorybyName(db, categoryName){
         categoryName = categoryName.replace(/_/g, " ");
         const result = await db.get("SELECT * FROM category WHERE category_name = ?;",[categoryName]);
@@ -47,6 +48,205 @@ class Databse{
         row.season_year = row.season_year + "";
       }
       return result;
+    }
+
+    static async findCurrentStandings(db, category){
+      let latestSeasons = await db.get(`SELECT season_ID, MAX(season_year) FROM season WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?)`,[category]);
+      if(latestSeasons["MAX(season_year)"]){
+        let results = await db.all(`SELECT driver_ID, driver_first_name, driver_last_name, points FROM (SELECT driver_ID, points FROM result WHERE points > 0 AND raceWeekend_ID IN (SELECT raceWeekend_ID FROM raceInSeason WHERE season_ID = ?)) NATURAL JOIN driver`,[latestSeasons.season_ID])
+      
+        let standings = [];
+        results.forEach(result =>{
+            standings.push({"name":result.driver_first_name + " " + result.driver_last_name, "points":result.points });
+        });
+        
+        let teamDriverRelation = await db.all(`SELECT team_name, driver_first_name, driver_last_name FROM (SELECT * FROM (SELECT team_ID, driver_ID FROM drove WHERE season_ID = ?) NATURAL JOIN team) NATURAL JOIN driver`,[latestSeasons.season_ID]);
+        teamDriverRelation = teamDriverRelation.map(x => function(){return{"team_name":x.team_name, "driver":x.driver_first_name + " " + x.driver_last_name }}());
+        let teamDriverRelationObj = {};
+        teamDriverRelation.forEach(x => {
+          teamDriverRelationObj[x.driver] = x.team_name;
+        });
+        
+        for(let x = 0; x<standings.length; x+=1){
+          if(standings[x].name in teamDriverRelationObj)
+            standings[x].team = teamDriverRelationObj[standings[x].name];
+          else
+            standings[x].team = "";
+        }
+  
+        let standingsObj = [{},{}];
+  
+        for(let x = 0; x<standings.length; x+=1){
+          if(standings[x].name in standingsObj[0]){
+            standingsObj[0][standings[x].name] += standings[x].points;
+          }else{
+            standingsObj[0][standings[x].name] = standings[x].points;
+          }
+  
+          if(standings[x].team in standingsObj[1]){
+            standingsObj[1][standings[x].team] += standings[x].points;
+          }else{
+            standingsObj[1][standings[x].team] = standings[x].points;
+          }
+        }
+  
+        let finalStandings = [[],[]];
+  
+        for(let key in standingsObj[0]){
+          let temp = {};
+          temp["name"] = key;
+          temp["points"] = standingsObj[0][key];
+          finalStandings[0].push(temp);
+        }
+  
+        finalStandings[0].sort((a,b) => b.points - a.points)
+  
+        for(let key in standingsObj[1]){
+          if(key != ""){
+            let temp = {};
+            temp["team"] = key;
+            temp["points"] = standingsObj[1][key];
+            finalStandings[1].push(temp);          
+          }
+        }
+  
+        finalStandings[1].sort((a,b) => b.points - a.points)
+  
+        return finalStandings.concat([category]);
+  
+      }
+      return [category];
+    }
+
+    static async findStandings(db, categoryName, seasonYear){
+      categoryName = categoryName.replace(/_/g, " ");
+      let lastestSeasonID = await db.get(`SELECT season_ID FROM season WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?) AND season_year = ?`,[categoryName,seasonYear]);
+      if(lastestSeasonID){
+        let results = await db.all(`SELECT driver_ID, driver_first_name, driver_last_name, points FROM (SELECT driver_ID, points FROM result WHERE points > 0 AND raceWeekend_ID IN (SELECT raceWeekend_ID FROM raceInSeason WHERE season_ID = ?)) NATURAL JOIN driver`,[lastestSeasonID.season_ID])
+      
+        let standings = [];
+        results.forEach(result =>{
+            standings.push({"name":result.driver_first_name + " " + result.driver_last_name, "points":result.points });
+        });
+        
+        let teamDriverRelation = await db.all(`SELECT team_name, driver_first_name, driver_last_name FROM (SELECT * FROM (SELECT team_ID, driver_ID FROM drove WHERE season_ID = ?) NATURAL JOIN team) NATURAL JOIN driver`,[lastestSeasonID.season_ID]);
+        teamDriverRelation = teamDriverRelation.map(x => function(){return{"team_name":x.team_name, "driver":x.driver_first_name + " " + x.driver_last_name }}());
+        let teamDriverRelationObj = {};
+        teamDriverRelation.forEach(x => {
+          teamDriverRelationObj[x.driver] = x.team_name;
+        });
+        
+        for(let x = 0; x<standings.length; x+=1){
+          if(standings[x].name in teamDriverRelationObj)
+            standings[x].team = teamDriverRelationObj[standings[x].name];
+          else
+            standings[x].team = "";
+        }
+  
+        let standingsObj = [{},{}];
+  
+        for(let x = 0; x<standings.length; x+=1){
+          if(standings[x].name in standingsObj[0]){
+            standingsObj[0][standings[x].name] += standings[x].points;
+          }else{
+            standingsObj[0][standings[x].name] = standings[x].points;
+          }
+  
+          if(standings[x].team in standingsObj[1]){
+            standingsObj[1][standings[x].team] += standings[x].points;
+          }else{
+            standingsObj[1][standings[x].team] = standings[x].points;
+          }
+        }
+  
+        let finalStandings = [[],[]];
+  
+        for(let key in standingsObj[0]){
+          let temp = {};
+          temp["name"] = key;
+          temp["points"] = standingsObj[0][key];
+          finalStandings[0].push(temp);
+        }
+  
+        finalStandings[0].sort((a,b) => b.points - a.points)
+  
+        for(let key in standingsObj[1]){
+          if(key != ""){
+            let temp = {};
+            temp["team"] = key;
+            temp["points"] = standingsObj[1][key];
+            finalStandings[1].push(temp);          
+          }
+        }
+  
+        finalStandings[1].sort((a,b) => b.points - a.points)
+  
+        return finalStandings;
+  
+      }
+      return [];
+    }
+
+    static async findChampions(db, categoryName){
+      categoryName = categoryName.replace(/_/g, " ");
+      let lastestSeasonID = await db.get(`SELECT season_ID, MAX(season_year) FROM season WHERE category_ID = (SELECT category_ID FROM category WHERE category_name = ?)`,[categoryName]);
+
+      let results = await db.all(`SELECT driver_ID, driver_first_name, driver_last_name, points FROM (SELECT driver_ID, points FROM result WHERE points > 0 AND raceWeekend_ID IN (SELECT raceWeekend_ID FROM raceInSeason WHERE season_ID = ?)) NATURAL JOIN driver`,[lastestSeasonID.season_ID])
+      
+      let standings = [];
+      results.forEach(result =>{
+          standings.push({"name":result.driver_first_name + " " + result.driver_last_name, "points":result.points });
+      });
+      
+      let teamDriverRelation = await db.all(`SELECT team_name, driver_first_name, driver_last_name FROM (SELECT * FROM (SELECT team_ID, driver_ID FROM drove WHERE season_ID = ?) NATURAL JOIN team) NATURAL JOIN driver`,[lastestSeasonID.season_ID]);
+      teamDriverRelation = teamDriverRelation.map(x => function(){return{"team_name":x.team_name, "driver":x.driver_first_name + " " + x.driver_last_name }}());
+      let teamDriverRelationObj = {};
+      teamDriverRelation.forEach(x => {
+        teamDriverRelationObj[x.driver] = x.team_name;
+      });
+      
+      for(let x = 0; x<standings.length; x+=1){
+        if(standings[x].name in teamDriverRelationObj)
+          standings[x].team = teamDriverRelationObj[standings[x].name];
+        else
+          standings[x].team = "";
+      }
+
+      let standingsObj = [{},{}];
+
+      for(let x = 0; x<standings.length; x+=1){
+        if(standings[x].name in standingsObj[0]){
+          standingsObj[0][standings[x].name] += standings[x].points;
+        }else{
+          standingsObj[0][standings[x].name] = standings[x].points;
+        }
+
+        if(standings[x].team in standingsObj[1]){
+          standingsObj[1][standings[x].team] += standings[x].points;
+        }else{
+          standingsObj[1][standings[x].team] = standings[x].points;
+        }
+      }
+
+      let champions = ["",""];
+
+      let champPoints = -1;
+      for(let key in standingsObj[0]){
+        if(standingsObj[0][key] > champPoints){
+          champions[0] = key;
+          champPoints = standingsObj[0][key];
+
+        }
+      }
+
+      champPoints = -1;
+      for(let key in standingsObj[1]){
+        if(standingsObj[1][key] > champPoints && standings[1][key] != ""){
+          champions[1] = key;
+          champPoints = standingsObj[1][key];
+        }
+      }
+      return champions;
     }
 
     static async findDrivers(db,categoryName){
@@ -559,11 +759,86 @@ class Databse{
       let result = await db.all(`SELECT vehicle_chassis_name FROM vehicle WHERE team_ID = (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[teamName,categoryName]);
       return result;
     }
+    
+    static async findTeamDrivers(db, categoryName, teamName){
+      let result = await db.all(`SELECT * FROM (SELECT * FROM (SELECT * FROM drove WHERE team_ID = 
+      (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = 
+        (SELECT category_ID FROM category WHERE category_name = ?)
+      )) NATURAL JOIN driver) NATURAL JOIN season`,[teamName,categoryName]);
+
+      result = result.map(x => function(){return {"Driver": x.driver_first_name + " " + x.driver_last_name, "Season":x.season_year}}());
+
+
+      return result;
+    }
+
+    static async findTeamResults(db, categoryName, teamName){
+      categoryName = categoryName.replace(/_/g, " ");
+
+      let result = await db.all(`SELECT * FROM result WHERE team_ID = 
+      (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = 
+        (SELECT category_ID FROM category WHERE category_name = ?)
+      )`,[teamName,categoryName]);
+
+      
+      return result;
+    }
 
     static async findVehicle(db,categoryName, teamName, vehicleName){
       categoryName = categoryName.replace(/_/g, " ");
 
       let result = await db.get(`SELECT * FROM vehicle WHERE vehicle_chassis_name = ? AND team_ID = (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = (SELECT category_ID FROM category WHERE category_name = ?))`,[vehicleName, teamName, categoryName ]);
+      return result;
+    }
+
+    static async findVehicleDrivers(db,categoryName, teamName, vehicleName){
+      categoryName = categoryName.replace(/_/g, " ");
+
+      let result = await db.all(`SELECT driver_first_name, driver_last_name FROM (SELECT driver_ID FROM drove WHERE season_ID = 
+      (SELECT season_ID FROM season WHERE category_ID = 
+        (SELECT category_ID FROM category WHERE category_name = ?) AND season_year = 
+        (SELECT vehicle_year FROM vehicle WHERE vehicle_chassis_name = ? AND team_ID = 
+          (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = 
+            (SELECT category_ID FROM category WHERE category_name = ?)
+          )
+        )
+      ) AND team_ID = (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = 
+        (SELECT category_ID FROM category WHERE category_name = ?)
+      )) NATURAL JOIN driver`,[categoryName, vehicleName, teamName, categoryName, teamName,categoryName]);
+
+      result = result.map(x => function(){return {"Driver": x.driver_first_name + " " + x.driver_last_name}}());
+      return result;
+    }
+
+    static async findVehicleResults(db,categoryName, teamName, vehicleName){
+      categoryName = categoryName.replace(/_/g, " ");
+
+      let result = await db.all(`SELECT position, driver_first_name, driver_last_name, race_name FROM (SELECT * FROM (SELECT * FROM result WHERE raceWeekend_ID IN 
+      (SELECT raceWeekend_ID FROM raceInSeason WHERE season_ID = 
+        (SELECT season_ID FROM season WHERE season_year = 
+          (SELECT vehicle_year FROM vehicle WHERE vehicle_chassis_name = ? AND team_ID = 
+            (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = 
+              (SELECT category_ID FROM category WHERE category_name = ?)
+            )
+          )      
+        )
+      ) AND session_type = "Race" AND driver_ID IN 
+      (
+        SELECT driver_ID FROM (SELECT driver_ID FROM drove WHERE season_ID = 
+          (SELECT season_ID FROM season WHERE category_ID = 
+            (SELECT category_ID FROM category WHERE category_name = ?) AND season_year = 
+            (SELECT vehicle_year FROM vehicle WHERE vehicle_chassis_name = ? AND team_ID = 
+              (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = 
+                (SELECT category_ID FROM category WHERE category_name = ?)
+              )
+            )
+          ) AND team_ID = (SELECT team_ID FROM team WHERE team_name = ? AND category_ID = 
+            (SELECT category_ID FROM category WHERE category_name = ?)
+          )) NATURAL JOIN driver
+      )) NATURAL JOIN driver) NATURAL JOIN raceWeekend`,[vehicleName, teamName, categoryName,categoryName, vehicleName, teamName, categoryName, teamName,categoryName]);
+
+      result = result.map(x => function(){return {"Position": x.position, "Driver": x.driver_first_name + " " + x.driver_last_name, "Race":x.race_name}}());
+      
       return result;
     }
 
@@ -722,6 +997,19 @@ class Databse{
     static async updateCategoryDescription(db,categoryName,updatedDescription){
       categoryName = categoryName.replace(/_/g, " ");
       await db.run(`UPDATE category SET category_description = ? WHERE category_name = ?`,[updatedDescription,categoryName]);
+    }
+
+    static async findDriverTeams(db, driverName){
+      let result = await db.all(`SELECT season_year, team_name, category_name  FROM 
+      ((SELECT * FROM (SELECT * FROM drove WHERE driver_ID = (SELECT driver_ID FROM driver WHERE driver_first_name = ? AND driver_last_name = ? )) NATURAL JOIN team) NATURAL JOIN season) NATURAL JOIN category`,[driverName.split(" ")[0],driverName.split(" ")[1]]);
+      return result;
+    }
+
+    static async findResults(db,driverName){
+      let result = db.all(`SELECT position, season_year, race_name FROM (SELECT * FROM (SELECT * FROM 
+      (SELECT * FROM result WHERE driver_ID = 
+        (SELECT driver_ID FROM driver WHERE driver_first_name = ? AND driver_last_name = ?) AND session_type = "Race") NATURAL JOIN raceInSeason) NATURAL JOIN raceWeekend) NATURAL JOIN season`,[driverName.split(" ")[0],driverName.split(" ")[1]])
+      return result;
     }
     
 }
