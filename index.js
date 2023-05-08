@@ -381,7 +381,8 @@ app.get('/category/:categoryName', async (req, res) =>{
       generalInfo:generalInfo,
       pictureURL: categoryInfo.category_picture,
       relation: req.params['categoryName'],
-      additionalScripts: ['/js/category.js']
+      writerScripts: ['/js/category.js'],
+      photoScripts: ['/js/categoryImage.js']
     }
 
     if(req.session.login){
@@ -506,7 +507,8 @@ app.get('/driver/:driverName', async (req, res) =>{
       generalInfo:generalInfo,
       pictureURL:driverInfo.driver_picture,
       relation:"/",
-      additionalScripts: ['/js/driver.js']
+      writerScripts: ['/js/driver.js'],
+      photoScripts: ['/js/driverImage.js']
     };
   
     if(req.session.login){
@@ -579,7 +581,8 @@ app.get('/circuit/:circuitName', async (req, res) =>{
       generalInfo:generalInfo,
       relation: "/circuit/"+req.params["circuitName"]+"/",
       pictureURL: circuitInfo.circuit_picture,
-      additionalScripts: ["/js/circuit.js"]
+      photoScripts: ["/js/circuitImage.js"],
+      writerScripts: ["/js/circuit.js"],
     };
   
     if(req.session.login){
@@ -642,7 +645,7 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
 
     let vehicles = await Database.findVehicles(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
     let drivers = await Database.findTeamDrivers(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
-    let results = await Database.findTeamResults(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
+    // let results = await Database.findTeamResults(db,req.params["categoryName"].replace(/_/g," "), req.params["teamName"].replace(/_/g," "));
 
     let sections = [
       ["Table","Vehicles", vehicles,[],["Link"],"/vehicle/"+req.params["categoryName"]+ "/"+req.params["teamName"]+"/"],
@@ -668,7 +671,8 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
       generalInfo:generalInfo,
       pictureURL: teamInfo.team_picture,
       relation: "/"+req.params["categoryName"]+ "/"+req.params["teamName"]+"/",
-      additionalScripts: ["/js/team.js"],
+      photoScripts: ["/js/teamImage.js"],
+      writerScripts: ["/js/team.js"],
     };
   
     if(req.session.login){
@@ -758,7 +762,8 @@ app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
       sections:sections, 
       generalInfo:generalInfo,
       pictureURL: vehicleInfo.vehicle_picture,
-      additionalScripts: ['/js/vehicle.js']
+      photoScripts: ['/js/vehicleImage.js'],
+      writerScripts: ['/js/vehicle.js'],
     };
   
     if(req.session.login){
@@ -766,6 +771,7 @@ app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
     }
     else{
       res.render('article', {props:props, permission:'null'});
+      
     }
   }else{
     res.render("notFound");
@@ -857,7 +863,8 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
       generalInfo:generalInfo,
       pictureURL: seasonInfo.season_picture,
       relation: req.params["categoryName"]+"/"+req.params["seasonYear"],
-      additionalScripts:['/js/season.js']
+      writerScripts:['/js/season.js'],
+      photoScripts:['/js/seasonImage.js'],
     };
   
     if(req.session.login){
@@ -1008,7 +1015,9 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
       generalInfo:generalInfo,
       pictureURL: race.race_picture,
       relation: req.params["categoryName"] + "/"+req.params["seasonYear"]+"/"+req.params["raceName"],
-      additionalScripts: ["/js/results.js"]
+      additionalScripts: ["/js/results.js"],
+      writerScripts: ["/js/resultsEditor.js"],
+      photoScripts: ["/js/resultsImage.js"],
     };
   
     if(req.session.login){

@@ -1,7 +1,4 @@
-let im = document.getElementById("generalInfoImage");
-im.addEventListener("dblclick",x=>{
-    showForm('updateCircuitImage',document.getElementsByClassName("topic-title mb-4")[0].innerHTML.replace(/ /g,"_") );
-});
+
 
 for(let x = 0; x < 3; x+=1){
     document.getElementsByClassName("card-info")[x].addEventListener("dblclick", e =>{

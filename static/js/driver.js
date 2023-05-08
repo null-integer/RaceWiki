@@ -1,9 +1,3 @@
-Array.from(document.getElementsByClassName("btn btn-success")).forEach(x => x.remove());
-let im = document.getElementById("generalInfoImage");
-im.addEventListener("dblclick",x=>{
-    showForm('updateDriverImage',document.getElementsByClassName("topic-title mb-4")[0].innerHTML.replace(/ /g,"_") );
-});
-
 
 for(let x = 0; x < 4; x+=1){
     document.getElementsByClassName("card-info")[x].addEventListener("dblclick", e =>{

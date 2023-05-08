@@ -1,11 +1,11 @@
 let el = document.getElementById("DriversButton");
 el.remove();
 
-let im = document.getElementById("generalInfoImage");
-im.addEventListener("dblclick",x=>{
-    showForm('updateCategoryImage',document.getElementsByClassName("topic-title mb-4")[0].innerHTML.replace(/ /g,"_") );
+el = document.getElementById("DescriptionButton");
+el.remove();
 
-});
+el = document.getElementById("RulesButton");
+el.remove();
 
 document.getElementById("RulesText").addEventListener("dblclick",x=>{
     document.getElementById("RulesText").contentEditable = "true";

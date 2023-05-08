@@ -3,11 +3,6 @@ bt = Array.from(bt);
 bt.shift();
 bt.forEach(x => x.remove());
 
-let im = document.getElementById("generalInfoImage");
-im.addEventListener("dblclick",x=>{
-    showForm('updateTeamImage',document.baseURI.split("/").slice(-2).join("/"));
-});
-
 for(let x = 0; x < 1; x+=1){
     document.getElementsByClassName("card-info")[x].addEventListener("dblclick", e =>{
         document.getElementsByClassName("card-info")[x].contentEditable = "true";

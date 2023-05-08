@@ -93,22 +93,20 @@
           <h2 id="<%= section[1] %>"><%= section[1] %>
 
             <!-- Adding an add button to section (Should not be visible to normal users)-->
-            <% if(permission == "ADMIN"){ %>
+            <!-- <% if(permission == "ADMIN"){ %>
               <% if(section[0] == "Table") { %>
                 <button type="button" class="btn btn-success" id="<%= section[1] %>Button" onclick="showForm('<%= section[1] %>Button','<%= props.relation %>')">+</button>            
               <% } %>
-            <% } %>
-            <% if(permission == "WRITER"){ %>
-              <% if(section[1] != "Flags") { %>
+            <% } %> -->
+            <% if(permission == "WRITER" || permission == "ADMIN"){ %>
                 <button type="button" class="btn btn-success" id="<%= section[1] %>Button" onclick="showForm('<%= section[1] %>Button','<%= props.relation %>')">+</button>            
-              <% } %>
             <% } %>
 
-            <% if(permission == "PHOTO"){ %>
+            <!-- <% if(permission == "PHOTO"){ %>
               <% if(section[1] == "Flags") { %>
                 <button type="button" class="btn btn-success" id="<%= section[1] %>Button" onclick="showForm('<%= section[1] %>Button','<%= props.relation %>')">+</button>            
               <% } %>
-            <% } %>
+            <% } %> -->
           </h2>
 
           <!-- If section is text, just display the text -->
@@ -176,13 +174,37 @@
   </footer>
     
   <!-- This Script should not be imported for normal users -->
-  <% if(permission !='USER') { %>
+  <!-- <% if(permission != 'null' && permission != 'USER') { %>
     <script type="text/javascript" src="/js/article.js"></script>
     <% if(props.additionalScripts){  %>
       <% props.additionalScripts.forEach(x => { %>
       <script type="text/javascript" src="<%= x %>"></script>
     <%})}%>
+  <% } %> -->
+
+
+  <% if(permission != 'null' || permission != 'USER') { %>
+    <script type="text/javascript" src="/js/article.js"></script>
   <% } %>
+
+  <% if(permission == 'PHOTO' || permission == 'ADMIN') { %>
+    <% if(props.photoScripts){  %>
+      <% props.photoScripts.forEach(x => { %>
+      <script type="text/javascript" src="<%= x %>"></script>
+    <%})}%>
+  <% } %>
+
+  <% if(permission == 'WRITER' || permission == 'ADMIN') { %>
+    <% if(props.writerScripts){  %>
+      <% props.writerScripts.forEach(x => { %>
+      <script type="text/javascript" src="<%= x %>"></script>
+    <%})}%>
+  <% } %>
+
+  <% if(props.additionalScripts){  %>
+    <% props.additionalScripts.forEach(x => { %>
+    <script type="text/javascript" src="<%= x %>"></script>
+  <%})}%>
 
 </body>
 </html>
