@@ -1,4 +1,6 @@
 //Import required modules
+const request = require('supertest');
+const assert = require('assert');
 const express = require('express');
 const sqlite3 = require('sqlite3');
 const { open } = require('sqlite');
@@ -80,6 +82,11 @@ app.get('/users', async (req,res)=>{
   res.send(users)
 })
 
+request(app).get('/users')
+            .expect((res) => {
+                if (!('users' in res.body)) throw new Error("Missing users /users in body");
+            }).end(() => {console.log("/users working as expected")});
+
 //Main Homepage
 app.get('/', async (req, res) => {
   if (req.session.login){
@@ -89,8 +96,15 @@ app.get('/', async (req, res) => {
   else{
     res.render('homepage',{categories:categories, permission:'null'})
   }
-
+    
 });
+
+request(app).get('/')
+            .expect((res) => {
+                if (!('categories' in res.body)) throw new Error("Missing categories in / body");
+                if (!('permission' in res.body)) throw new Error("Missing permission in / body");
+            }).end(() => {console.log("/ working as expected")});
+
 //Sign In Page
 app.get('/signin', async (req, res) => {
   if(req.session.login){
@@ -101,6 +115,7 @@ app.get('/signin', async (req, res) => {
   }
 	
 });
+
 
 //check credential in User db
 app.post('/signin',(req,res)=>{
@@ -148,6 +163,9 @@ app.post('/signin',(req,res)=>{
   
 });
 
+
+
+
 app.get('/signout',(req,res)=>{
   delete req.session.login
   res.render('homepage',{
@@ -155,6 +173,13 @@ app.get('/signout',(req,res)=>{
     permission: 'null'
   })
 })
+
+request(app).get('/signout')
+            .expect((res) => {
+                if (!('categories' in res.body)) throw new Error("Missing categories in /signout body");
+                if (!('permission' in res.body)) throw new Error("Missing permission in /signout body");
+                if (res.body.permission != 'null') throw new Error("Permissions not cleared after signout");
+            }).end(() => {console.log("/signout working as expected")});
 
 //singup page
 app.get('/register',(req,res)=>{
@@ -205,6 +230,16 @@ app.get('/controlpanel', async (req, res) => {
   }
 	
 });
+
+
+request(app).get('/controlpanel')
+            .expect((res) => {
+                if (res.res.rawHeaders[3] != '/') {
+                    if (!('categories' in res.body)) throw new Error("Missing categories in /controlpanel body");
+                    if (!('users' in res.body)) throw new Error("Missing users in /controlpanel body");
+                }
+            }).end(() => {console.log("/controlpanel working as expected")});
+
 app.post('/controlpanel' ,(req,res)=>{
   let id = req.body.Id;
   let username = req.body.username;
@@ -338,6 +373,13 @@ app.get('/category/:categoryName', async (req, res) =>{
   }  
 });
 
+
+request(app).get('/category/:categoryName')
+            .expect((res) => {
+                if (!('props' in res.body)) throw new Error("Missing props in /category body");
+                if (!('permission' in res.body)) throw new Error("Missing permission in /category body");
+            }).end(() => {console.log("/category working as expected")});
+
 //POST Methods for the category page
 
 //Add a new season to a category
@@ -453,6 +495,12 @@ app.get('/driver/:driverName', async (req, res) =>{
 
 });
 
+
+request(app).get('/driver/:driverName')
+            .expect((res) => {
+                if (!('props' in res.body)) throw new Error("Missing props in /driver body");
+            }).end(() => {console.log("/driver working as expected")});
+
 //POST Methods for Driver page
 
 //Update the category image
@@ -514,6 +562,12 @@ app.get('/circuit/:circuitName', async (req, res) =>{
   }
 
 });
+
+request(app).get('/circuit/:circuitName')
+            .expect((res) => {
+                if (!('props' in res.body)) throw new Error("Missing props in /circuit body");
+            }).end(() => {console.log("/circuit working as expected")});
+
 
 //POST methods for circuit page
 
@@ -598,6 +652,12 @@ app.get('/team/:categoryName/:teamName', async (req, res) =>{
 
 });
 
+
+request(app).get('/team/:categoryName/:teamName')
+            .expect((res) => {
+                if (!('props' in res.body)) throw new Error("Missing props in /team body");
+            }).end(() => {console.log("/team working as expected")});
+
 //POST methods for Team
 
 //New Vehicle for a team
@@ -680,6 +740,12 @@ app.get('/vehicle/:categoryName/:teamName/:vehicleName', async (req, res) =>{
 
 });
 
+
+request(app).get('/vehicle/:categoryName/:teamName/:vehicleName')
+            .expect((res) => {
+                if (!('props' in res.body)) throw new Error("Missing props in /vehicle body");
+            }).end(() => {console.log("/vehicle working as expected")});
+
 //POST methods for Vehicle page
 
 //Update the vehicle image
@@ -687,7 +753,7 @@ app.post('/vehicle/:categoryName/:teamName/:vehicleName/image',async (req, res) 
 
   Database.updateVehicleImage(db,req.params["categoryName"],req.params["teamName"],req.params["vehicleName"],req.body.imageURLInput.trim());
   
-  res.redirect(req.get('referer'));
+  res.redirect(req.et('referer'));
 });
 
 //Update the vehicle info
@@ -767,6 +833,12 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
   }
 
 });
+
+request(app).get('/season/:categoryName/:seasonYear')
+            .expect((res) => {
+                if (!('props' in res.body)) throw new Error("Missing props in /season body");
+            }).end(() => {console.log("/season working as expected")});
+
 
 //POST methods for Season
 
@@ -907,6 +979,12 @@ app.get('/race/:categoryName/:seasonYear/:raceName', async (req, res) =>{
   }
 
 });
+
+
+request(app).get('/race/:categoryName/:seasonYear/:raceName')
+            .expect((res) => {
+                if (!('props' in res.body)) throw new Error("Missing props in /race body");
+            }).end(() => {console.log("/race working as expected")});
 
 //POST Methods for Race
 
