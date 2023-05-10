@@ -91,34 +91,17 @@ request(app).get('/users')
 app.get('/', async (req, res) => {
   if (req.session.login){
 
-    let standings = [];
+    // let standings = [];
+    // standings.push(await Database.findCurrentStandings(db,"F1"));
+    // console.log(standings);
 
-    await Promise.all(categories.map(async (x) => {
-      const standing = await Database.findCurrentStandings(db,x);
-      console.log(standing);
-      let cat = standing[standing.length - 1];
-      let temp = {};
-      temp[cat] = standing;
-      standings.push(temp);
-    }));
-    console.log(standings);
-
-    res.render('homepage',{categories:categories,permission:req.session.login.permission});
+    res.render('homepage',{categories:categories,permission:req.session.login.permission, standings:standings});
   }
   else{
-    let standings = [];
-
-    await Promise.all(categories.map(async (x) => {
-      const standing = await Database.findCurrentStandings(db,x);
-      console.log(standing);
-      let cat = standing[standing.length - 1];
-      let temp = {};
-      temp[cat] = standing;
-      standings.push(temp);
-    }));
-  
-    console.log(standings);
-    res.render('homepage',{categories:categories, permission:'null'})
+    // let standings = [];
+    // standings.push(await Database.findCurrentStandings(db,"F1"));
+    // console.log(standings);
+    res.render('homepage',{categories:categories, permission:'null', standings:standings})
   }
     
 });
@@ -194,7 +177,8 @@ app.get('/signout',(req,res)=>{
   delete req.session.login
   res.render('homepage',{
     categories: categories,
-    permission: 'null'
+    permission: 'null',
+    standings:standings
   })
 })
 
@@ -238,6 +222,14 @@ app.post('/register',(req,res)=>{
   }
   
 })
+
+
+app.get('/getCategories', async (req,res) => {
+
+  let result = await Database.findAllCategories(db);
+  res.json(result);
+
+});
 
 //Control Panel 
 app.get('/controlpanel', async (req, res) => {
@@ -310,6 +302,41 @@ app.post('/newcategory', async (req, res) => {
     }
   }
 
+});
+
+app.post('/search', async (req,res) => {
+
+  switch(req.body.relation){
+    case "Category":
+      res.redirect('/category/'+req.body.query);
+    break;
+
+    case "Driver":
+      res.redirect('/driver/'+req.body.query);
+    break;
+
+    case "Circuit":
+      res.redirect('/circuit/'+req.body.query);
+    break;
+
+    case "Team":
+      res.redirect('/team/'+req.body.additionalRelationMenu.replace(/ /g,"_") + "/"+req.body.query.replace(/ /g,"_"));
+    break;
+
+    case "Vehicle":
+      res.render('notFound');
+    break;
+
+    case "Season":
+      res.render('notFound');
+    break;
+
+    case "Race":
+      res.render('notFound');
+    break;
+
+    default:
+  }
 });
 
 //Articles
@@ -824,10 +851,11 @@ app.get('/season/:categoryName/:seasonYear', async (req, res) =>{
   
     let calendar = await Database.findCalendar(db,categoryName, req.params["seasonYear"]);
     calendarArray = [];
+    calendar.sort(function(a,b){return new Date(a.race_date) - new Date(b.race_date)})
     for(let round = 0; round < calendar.length; round+=1){
       calendarArray.push({"Round":round + 1, "Date":calendar[round].race_date, "Name":calendar[round].race_name});
     }
-    calendarArray.sort(function(a,b){return new Date(a.Date) - new Date(b.Date)});
+    // calendarArray.sort(function(a,b){return new Date(a.Date) - new Date(b.Date)});
   
     let entries = await Database.findEntries(db,categoryName, req.params["seasonYear"]);
     let teams = [];
@@ -1171,28 +1199,62 @@ app.post('/togglePoints',async (req, res) =>{
 
 });
 
+
+let standings = {
+  "F1": [
+    {"name":"Max Verstappen","team":"Oracle Redbull Racing","points":119},
+    {"name":"Sergio Perez","team":"Oracle Redbull Racing","points":105},
+    {"name":"Fernando Alonso","team":"Aston Martin Aramco Cognizant F1 Team","points":75},
+    {"name":"Lewis Hamilton","team":"Mercedes-AMG PETRONAS F1 Team","points":56},
+    {"name":"Carlos Sainz","team":"Scuderia Ferrari","points":44},
+    {"name":"George Russell","team":"Mercedes-AMG PETRONAS F1 Team","points":40},
+    {"name":"Charles Leclerc","team":"Scuderia Ferrari","points":34},
+    {"name":"Lance Stroll","team":"Aston Martin Aramco Cognizant F1 Team","points":27},
+    {"name":"Lando Norris","team":"McLaren F1 Team","points":10},
+    {"name":"Pierre Gasly","team":"BWT Alpine F1 Team","points":8},
+    {"name":"Nico Hulkenberg","team":"MoneyGram Haas F1 Team","points":6},
+    {"name":"Esteban Ocon","team":"BWT Alpine F1 Team","points":6},
+    {"name":"Valterri Bottas","team":"Alfa Romeo F1 Team Stake","points":4},
+    {"name":"Oscar Piastri","team":"McLaren F1 Team","points":4},
+    {"name":"Zhou Guanyu","team":"Alfa Romeo F1 Team Stake","points":2},
+    {"name":"Yuki Tsunoda","team":"Scuderia AlphaTauri","points":2},
+    {"name":"Kevin Magnessun","team":"MoneyGram Haas F1 Team","points":2},
+    {"name":"Alexander Albon","team":"Williams Racing","points":1},
+    {"name":"Logan Sargeant","team":"Williams Racing","points":0},
+    {"name":"Nyck DeVries","team":"Scuderia AlphaTauri","points":0},
+  ],
+  "F2": [
+    {"name":"Theo Pourchaire","team":"ART Grand Prix","points":65},
+    {"name":"Frederik Vesti","team":"Prema Powerteam","points":60},
+    {"name":"Ayumu Iwasa","team":"DAMS","points":58},
+    {"name":"Oliver Bearman","team":"Prema Powerteam","points":41},
+    {"name":"Kush Maini","team":"Campos Racing","points":39},
+    {"name":"Dennis Hauger","team":"MP Motorsport","points":36},
+    {"name":"Ralph Boschung","team":"Campos Racing","points":34},
+    {"name":"Arthur Leclerc","team":"DAMS","points":33},
+    {"name":"Jehan Daruvala","team":"MP Motorsports","points":33},
+    {"name":"Enzo Fittipaldi","team":"Carlin","points":32},
+    {"name":"Victor Martins","team":"ART Grand Prix","points":31},
+    {"name":"Zane Maloney","team":"Carlin","points":29},
+    {"name":"Richard Verschoor","team":"Van Amersfoort Racing","points":29},
+    {"name":"Jack Doohan","team":"UNI-Virtuosi","points":27},
+    {"name":"Isack Hadjar","team":"HitechGP","points":24},
+    {"name":"Jak Crawford","team":"HitechGP","points":16},
+    {"name":"Juan Manuel Correa","team":"Van Amersfoort Racing","points":15},
+    {"name":"Clement Novalak","team":"Trident","points":4},
+    {"name":"Roman Staněk","team":"Trident","points":2},
+    {"name":"Roy Nissany","team":"Charouz Racing System","points":2},
+    {"name":"Amaury Cordeel","team":"UNI-Virtuosi","points":0},
+    {"name":"Brad Benavides","team":"Charouz Racing System","points":0},
+
+  ],
+  "F3": [{},{},{}],
+  "Indycar": [{},{},{}],
+  "MotoGP": [{},{},{}],
+  "Moto2": [{},{},{}],
+  "Nascar Cup Series": [{},{},{}],
+
+}
+
 //Start the server
 app.listen(port, () => console.log('Server running'));
-
-/*
-  TODO:
-    category:
-      calculate the drivers and constructors for the latest season
-
-    driver:
-     calculate teams,wins,podiums,pole positions, results
-     In podiums and results mark as gold, silver, or bronze
-    
-    team:
-      calculate teams,drivers,podiums,pole positions, results, champs
-
-    season:
-      calculate championships
-
-    vehicle:
-      calculate drivers, wins, podiums, pole, full result
-
-    main:
-      calculate standings for current season
-
-*/

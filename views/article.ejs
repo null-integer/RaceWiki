@@ -24,8 +24,22 @@
       </div>
 
       <div class="ms-auto d-none d-lg-block">
-        <form action="/search" method="get" class="me-2">
+        <form action="/search" method="post" class="me-2">
+
           <div class="input-group">
+
+            <select class="form-select form-select-sm" aria-label=".form-select-sm example" name="relation" id="relationMenu">
+              <option selected value="">Relation</option>
+              <option value="Category">Category</option>
+              <option value="Driver">Driver</option>
+              <option value="Circuit">Circuit</option>
+              <option value="Team">Team</option>
+              <option value="Vehicle">Vehicle</option>
+              <option value="Season">Season</option>
+              <option value="Race">Race</option>
+            </select>
+            <div id="additionalRelation"></div>
+
             <input type="text" class="form-control" name="query" placeholder="Search...">
             <button type="submit" class="btn btn-outline-danger">Search</button>
           </div>
@@ -205,6 +219,8 @@
     <% props.additionalScripts.forEach(x => { %>
     <script type="text/javascript" src="<%= x %>"></script>
   <%})}%>
+
+  <script type="text/javascript" src="/js/search.js"></script>
 
 </body>
 </html>
